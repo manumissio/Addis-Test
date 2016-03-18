@@ -1,0 +1,65 @@
+
+.btn-addis-orange {
+    color: white;
+    background: #E17A18;
+}
+
+    .btn-addis-orange:hover {
+        color: white;
+        background: #EEB711;
+        border-bottom: 5px solid #86B82A;
+    }
+
+.btn-addis-green {
+    color: white;
+    background: #86B82A;
+}
+
+    .btn-addis-green:hover {
+        color: white;
+        background: #EEB711;
+        border-bottom: 5px solid #E17A18;
+    }
+
+.btn-addis-yellow {
+    color: white;
+    background: #EEB711;
+}
+
+    .btn-addis-yellow:hover {
+        color: white;
+        background: #86B82A;
+        border-bottom: 5px solid #E17A18;
+    }
+
+a.addis-link {
+    color: #86B82A;
+}
+
+    a.addis-link:hover {
+        box-shadow: #86B82A 0px 0px 10px;
+    }
+    
+    .comment{
+    	margin-top:10px;
+    	min-height: 100px;
+    }
+    
+ 	.delete_comment{
+ 		color:white;
+ 		
+ 		min-height:50px;
+ 		min-width:50px;
+ 	
+ 		 background: url("img/delete_button.png");
+ 		  background-repeat: no-repeat;
+		  background-size: 100% 100%;
+		  background-color:red;
+ 		 /*background-color:red;*/
+ 		text-align:center;
+ 		/*background:red;*/
+ 	}
+ 		.delete_comment:hover{
+ 			background-color: orange;
+ 			border:5px solid red;
+ 		}

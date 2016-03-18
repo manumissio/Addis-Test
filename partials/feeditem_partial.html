@@ -1,0 +1,44 @@
+		
+			<div ng-repeat="idea in ideas">
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                                <div class="panel-more1 col-xs-6 col-sm-3">
+                                    <img ng-show="idea.IDEA_IMG_PATH" class="img-responsive" alt='no image'  ng-src="{{idea.IDEA_IMG_PATH}}" align="right" />
+                                    <img ng-hide="idea.IDEA_IMG_PATH" class='img-responsive ' ng-src="images/default_idea.png" />
+                                </div>                            
+                                <div class=" panel-info col-xs-6 col-sm-9">
+                                <span><a class="addis-link" href="#idea/{{idea.TITLE}}"><strong>{{idea.TITLE}}</strong></a></span>
+                                    <p>{{idea.DESCRIPTION}}</p>
+                                </div>
+                                
+                                
+                            <!-- <div class="time col-xs-6 col-sm-9 col-xs-offset-6 col-sm-offset-3" align="right"> -->
+                               <!-- <p>8:00 PM</p> -->
+                                <!-- <span><i class="icon-user"></i> Idea by: {{idea}}</span> -->
+                               <div>
+                               		<span><i class="cg-icon-location" ng-show=" idea.LOCATION_CITY || idea.LOCATION_STATE_PROV || idea.LOCATION_COUNTRY"></i>{{idea.LOCATION_CITY}}</span>
+                               		<span ng-show="(idea.LOCATION_CITY && idea.LOCATION_CITY != 'null') || (idea.LOCATION_COUNTRY && idea.LOCATION_COUNTRY != 'null')">, </span>
+                               		<span ng-show="idea.LOCATION_STATE_PROV != 'null'">{{idea.LOCATION_STATE_PROV}}</span>
+                               		<span ng-show="(idea.LOCATION_CITY &&idea.LOCATION_CITY != 'null') || (idea.LOCATION_STATE_PROV && idea.LOCATION_STATE_PROV != 'null')">, </span>
+                               		<span>{{idea.LOCATION_COUNTRY}}</span>
+                               </div>
+                                
+                            
+                          
+                              <div class="time col-xs-6 col-sm-9 col-xs-offset-6 col-sm-offset-3" align="right">
+                              	
+	                            <div class="col-xs-4">
+	                                <strong><i class="cg-icon-people pull-right"></i>{{idea.VIEWS}}</strong>
+	                            </div>
+	                            <div class="col-xs-4">
+	                                <strong><i class="cg-icon-comment pull-right"></i>{{idea.COMMENTS}}</strong>
+	                            </div>
+	                            <div class="col-xs-4">
+	                                <strong><i class="cg-icon-favourite pull-right"></i>{{idea.LIKES}}</strong>
+	                            </div>
+                        	</div>
+                            <!--  -->
+                            </div>
+                        </div>
+                    </div>
+		

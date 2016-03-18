@@ -1,0 +1,210 @@
+
+
+    <!--header-->
+    <!--header-->
+  
+
+    <section id="idea">
+        <div class="panel panel-default personal-info">
+            <div class="panel-heading text-dark row">
+                <h4 class='col-xs-9'>
+                    <strong>{{idea.TITLE}}</strong>
+                </h4>
+                <h4><a  class='addis-link col-xs-3' ng-show='idea_owner==user_username' ng-href='#idea_edit/{{idea.TITLE}}'><strong>EDIT</strong></a></h4>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-xs-4" style="margin-bottom: 0px; padding-right: 0px;">
+                        <div class="col-xs-12 photo">
+                            <img class="img-responsive" ng-show="idea.IDEA_IMG_PATH" ng-src="{{idea.IDEA_IMG_PATH}}" align="right" />
+                            <img class="img-responsive" ng-hide="idea.IDEA_IMG_PATH" ng-src="images/default_idea.png" align="right" />
+                        </div>
+                    </div>
+                    <div class="col-xs-8" style="margin-bottom: 0px;">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <button class="col-xs-12 btn btn-default"><i class="cg-icon-idea"></i>{{idea.COMMENTS}} Ideas</button>
+                            </div>
+                            <div class="col-xs-12">
+                                <button class="col-xs-12 btn btn-default"><i class="cg-icon-like"></i>{{idea.LIKES}} Likes</button>
+                            </div>
+                            <div class="col-xs-12">
+                                <button class="col-xs-12 btn btn-default"><i class="cg-icon-collaboration"></i>{{profile.collaboration_count}} Collaborations</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--<div class="panel panel-default personal-info">
+            <div class="panel-heading text-dark">
+                <h4>
+                    Idea by<strong>{{profile.firstname}} {{profile.lastname}}</strong>
+                </h4>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-xs-4" style="margin-bottom: 0px; padding-right: 0px;">
+                        <div class="col-xs-12 photo">
+                            <img src="http://lorempixel.com/100/100" align="right"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>    
+        -->    
+        <div class="panel panel-default categories">
+            <div class="panel-heading">
+                <h4 class="panel-title text-muted">
+                    Topics
+                </h4>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="category-item addis-link" ng-repeat="category in categories track by $index">{{category.TOPICNAME}} <i class="action-remove icon-minus-sign" ng-click="deleteCategory($index)"></i></div>
+                    <!-- <div class="category-item"><input type="text" ng-model="adding_category" placeholder="Category"/></div> -->
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-default categories">
+            <div class="panel-heading">
+                <h4 class="panel-title text-muted">
+                    Addressed To
+                </h4>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="category-item addis-link" ng-repeat="item in addressed_to track by $index">{{item.STAKEHOLDER}} <i class="action-remove icon-minus-sign" ng-click="deleteCategory($index)"></i></div>
+                    <!-- <div class="category-item"><input type="text" ng-model="adding_category" placeholder="Location"/></div> -->
+                </div>
+            </div>  
+        </div>         
+        <div class="panel panel-default about">
+            <div class="panel-heading">
+                <h4 class="panel-title text-muted">{{idea.TITLE}}</h4>
+            </div>
+            <div class="panel-body">
+                <strong><label>{{idea.DESCRIPTION}}</label></strong>
+            </div>
+            <!-- <div class="panel-footer text-center">
+                <a href="#" class="panel-title"><strong>Read More</strong></a>
+            </div> -->
+        </div>
+<!--         <div class="panel panel-default about">
+        <div class="panel-heading">
+        <h4 class="panel-title text-muted" style="text-align:center; padding-top: 10px">COMMENT</h4>
+        </div>
+            <div class="panel-body">
+                <strong><textarea></textarea></strong>
+            </div>
+        </div>  -->  
+          <!-- <button type="button" class="btn btn-primary " style="background-color: #0F9D58; margin:auto;display:block;">Request Collaboration</button> -->
+        <!-- </div>            -->
+        <div class="container">
+          <form role="form">
+            <div class="form-group">
+              <label for="comment">Comment</label>
+              <textarea class="form-control" rows="5" id="comment" ng-model="comment" placeholder = 'Post a comment!'></textarea>
+            </div>
+          </form>
+          <button type="button" ng-click="makeComment(comment, idea.TITLE, 'idea_message')" class="btn  btn-addis-green"> <!-- style="background-color: #0F9D58;margin:auto;display:block;" -->Post Comment</button>
+       	<div class='row idea-comment-header'>
+       		<label class='col-xs-2 pull-right'>Time Posted</label>
+       		<strong class='col-xs-2 pull-right'>Commenter</strong>
+       		
+       		<label class='pull-right col-xs-8'>Content</label>		
+       	</div>
+       	<hr/>
+       	<div class='row' ng-repeat="comment in idea_comments" class='idea-comment'>
+       		<button>DELETE</button>
+       		<label class='col-xs-2 pull-right'>Posted at: {{comment.CREATED_TIMESTAMP}}</label>
+       		<strong class='col-xs-2 pull-right'><a class='addis-link' ng-href="#profile/{{comment.USERNAME}}">{{comment.USERNAME}}</a></strong>
+       		
+       		<label class='pull-right col-xs-8'>{{comment.CONTENT}}</label>		
+       	</div>
+        </div>      
+        
+        
+    <!--<footer id="footer">
+        <div class="tabs tabs-icon-top">
+            <div class="tab-item">
+                <div>
+                    <a class="active"><i class="icon-home"></i><br>Home</a>
+                </div>
+            </div>
+            <div class="tab-item">
+                <div>
+                    <a><i class="icon-search"></i><br>Search</a>
+                </div>
+            </div>
+            <div class="tab-item round">
+                <div>
+                    <a><i class="icon-edit"></i><br>Create</a>
+                </div>
+            </div>
+            <div class="tab-item">
+                <div>
+                    <a><i class="icon-envelope-alt"><span class="badge bg-danger"></span></i><br> Message</a>
+                </div>
+            </div>
+            <div class="tab-item">
+                <div>
+                    <a><i class="icon-user"></i><br>My Profile</a>
+                </div>
+            </div>
+        </div>
+    </footer>-->
+
+   
+
+    <!-- <script>
+        var app = angular.module('profileApp', []);
+        app.controller('profileCtrl', function($scope, $http) {
+            $scope.adding_category='';
+            $http.get("profile.json").success(function(response) {
+                $scope.profile=response;
+            });
+
+            $scope.addCategory = function() {
+                if($scope.adding_category != '') {
+                    $scope.profile.categories.push($scope.adding_category);
+                    $scope.adding_category='';
+                }
+            }
+
+            $scope.deleteCategory = function($index) {
+                if($index>=0 && $index<$scope.profile.categories.length) {
+                    $scope.profile.categories.splice($index, 1);
+                }
+            }
+
+            $scope.addProfileImage = function() {
+                $('#profile_img_upload').trigger('click');
+            }
+
+            $scope.removeProfileImage = function() {
+                $('#profile_img').attr('src', '');
+                $('#profile_img_upload').val("");
+                $scope.profile.profile_img_exist = false;
+            }
+        });
+
+        $(function () {
+            $('#profile_img_upload').bind('change', function() {
+                if (this.files && this.files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        $('#profile_img').attr('src', e.target.result);
+                        // $('#profile_img_add').hide();
+                        // $('#profile_img_delete').show();
+                        var appElement = document.querySelector('[ng-app=profileApp]');
+                        var $scope = angular.element(appElement).scope();
+                        $scope.$apply(function() {
+                            $scope.profile.profile_img_exist = true;
+                        });
+                    }
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+        })
+    </script> -->

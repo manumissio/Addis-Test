@@ -1,0 +1,5 @@
+<ul id='notify-box-page'  class='list-group 	 notify col-xs-12'>                	
+                	<li ng-repeat='n in notifications' class='list-group-item'><a class='addis-link' ng-href='{{n.LINK}}'>{{n.MSG}} on {{n.TIME | asDate | date:'medium'}}</a>
+                	</li>	
+                	<li class='list-group-item text-center'><a  class='addis-link text-center' ng-click='showMore()' >See More</a></li>
+</ul> 

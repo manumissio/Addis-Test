@@ -1,0 +1,13 @@
+#maincontent, html{
+	height:auto;
+	background:white;
+
+}
+
+#footer{
+	width:100%;
+	margin-top:20px;
+	height:100px;
+	background:#FFFFFF;
+    box-shadow:#ccc 5px 5px 10px;
+}

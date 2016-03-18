@@ -1,0 +1,39 @@
+﻿.sec{
+  
+  margin-top:5px;
+}
+.sec h1, .profile h1{
+    padding-left:20px;
+    height:75px;
+  background:#eee;
+  box-shadow:0px 0px 10px #555;
+}
+.profile img{
+  max-width:300px;
+  min-width:150px;
+}
+.profile .feeditem .users {
+display:none;
+}
+.row{
+  
+}
+.profile ul{
+
+  
+  height:100%;
+  list-style:none;
+ 
+}
+.profile li
+{
+ 
+  height:inherit;
+  
+}
+ .categories ul{
+   padding:20px;
+ }
+ .categories li{
+   margin:10px;
+ }

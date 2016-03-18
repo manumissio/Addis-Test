@@ -1,0 +1,90 @@
+
+    	 <!-- <script>        
+		$(document).ready(function(){
+			$('input[type=text][name=password]').tooltip({
+			    placement: "right",
+			    trigger: "focus"});			    			
+		    $(".signup").click(function(){
+		        $("button").replaceWith("<p>Complete!</p>");
+		    });
+		});
+        </script> -->
+    <header>
+    <img src="images/banner_logo.png" class="center">
+    </header>
+		<div class="container signup-container">
+		  <div class="row">
+		    <div class="form-centered responsive">
+		      <div id="logo-container"></div>
+		      <div class="col-sm-12 col-md-10 col-md-offset-1">
+		        <form id="signupForm">
+		           <div class="form-group input-group">
+		            <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+		            <input class="form-control" type="text" name='username' placeholder="Username"/>          
+		          </div>
+		          <div class="form-group input-group">
+		            <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+		            <input class="form-control" type="text" name='firstname' placeholder="First name"/>          
+		          </div>
+		           <div class="form-group input-group">
+		            <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+		            <input data-toggle="tooltip" title="" class="form-control" type="text" name='lastname' placeholder="Last name"/>          
+		          </div>
+		           <div class="form-group input-group">
+		            <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
+		            <input data-toggle="tooltip" title="At least eight characters in length. Must include a letter and a number." class="form-control"  name='password' type="text" placeholder="Type password"/>     
+		          </div>
+		          <div class="form-group input-group">
+		            <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
+		            <input class="form-control" name='password' type="text" placeholder="Type password again"/>     
+		          </div>
+		          <div class="form-group input-group">
+		            <span class="input-group-addon"><i class="glyphicon glyphicon-envelope"></i></span>
+		            <input class="form-control" name='email' type="text" placeholder="Email address"/>     
+		          </div>
+		          <div class="form-group input-group referral">
+		            <span class="input-group-addon"><i class="glyphicon glyphicon-question-sign"></i></span>
+		            <input class="form-control" type="referral" name='referral' type="text" placeholder="How did you hear about us?"/>     
+		          </div>		          
+		          <div class="register">
+		            <label>
+		              By registering, I'm agreeing to the <a data-toggle='modal' data-target='#terms'>Terms and Conditions</a>
+		            </label>
+		          </div>
+		          <div class="form-group">
+		            <button type="button" class="signup btn btn-def btn-block" action="">Signup</button>
+		          </div>
+		          <div class="form-group text-center">
+		            <a href="mailto:info@addisideas.org?Subject=I'm%20having%20trouble!">Support</a>
+		          </div>
+		        </form>        
+		      </div>  
+		    </div>    
+		  </div>
+		</div>
+		
+		<div id="terms" class="modal fade col-xs-12" role="dialog">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                        
+                            <div class="modal-body">
+                            
+                               <p>Terms and conditions blurb here. . . </p>
+
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn-addis-green" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+						
+                    </div>
+                </div>
+        <!-- <!-- Google Analytics: change UA-XXXXX-X to be your site's ID.
+        <script>
+            (function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
+            function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;
+            e=o.createElement(i);r=o.getElementsByTagName(i)[0];
+            e.src='http://www.google-analytics.com/analytics.js';
+            r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
+            ga('create','UA-73768618-1');ga('send','pageview'); -->
+        <!-- </script> -->

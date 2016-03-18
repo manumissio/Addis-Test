@@ -1,0 +1,73 @@
+
+.feeditem{
+	border-top: 5px solid #FFDA55;
+	margin-top: 10px;
+ padding-top:20px;
+ padding-bottom:20px;
+	background:#FFFFF3;
+    	/*background-color:green;*/
+	clear:both;
+   overflow:hidden;
+    height:auto;
+    min-width:350px;
+    box-shadow:#ccc 5px 5px 33px;
+}
+    .feeditem:hover {
+        border-bottom:3px solid #86B82A;
+    }
+   
+   .feeditem .collabs{
+   	display: none;
+   }
+.feedcontent .socialbar {
+          text-align:center;
+            padding-top:50px;
+          
+            bottom:0;
+        }
+    .socialbar a {
+        text-decoration:none;
+   
+    }
+        .socialbar a .glyphicon-heart{
+             color:#E17A18;
+        }
+        .socialbar a .glyphicon-comment{
+             color:#86B82A;
+        }
+        .socialbar a .glyphicon-eye-open{
+             color:#EEB711;
+        }
+.img-wrapper{
+    /*width:90%;*/
+	float:left;
+    height:auto;
+}
+    .img-wrapper img {
+        margin: auto;
+    }
+	
+.collab1
+{
+	color:#86B82A;
+}
+.collab2{
+	color:#E17A18;
+}
+@media screen and (min-width: 699px) {
+
+
+   
+        
+}
+
+.feeditem-collabs {
+height:30%;
+}
+
+.feeditem .glyphicon, .feeditem .badge {
+text-align:center;
+}
+
+
+

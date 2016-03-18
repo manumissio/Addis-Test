@@ -1,0 +1,154 @@
+
+#banner{
+	margin-top:100px;
+	font-family:"Palatino Linotype", "Book Antiqua", Palatino, serif;
+	height:250px;
+	background-color:white;
+	background-image:url('../images/banner_logo.png');
+	background-repeat:no-repeat;
+	background-position:center;
+	text-align:center;
+	line-height:100px;
+	color:white;
+}
+
+.addis-main-nav{
+	/*position:fixed;
+	left:0;
+	top:0;*/
+	width:100%;
+	z-index: 10;
+}
+
+.navbar-header button{
+    background:#E17A18;
+    color:white;
+    
+}
+
+#menu, #menu-mobile{
+	/*position:fixed;
+	left:0;
+	top;0;*/
+	width:100%;
+	height:15%;
+	background:#E17A18;
+    box-shadow:#ccc 5px 5px 10px;
+	z-index: 0;
+	
+}
+	
+#menu-mobile button .mobile-menu-icon{
+	width:50%;
+	padding:10%;
+}
+
+#menu-mobile a{
+	
+	color:white;
+	width: 20%;
+}
+	#menu ul{
+        /*text-align:center;*/
+		/*margin:0;*/
+		/*padding:0;*/
+        /*white-space:nowrap;*/
+        width:100%;
+      
+  display: table;
+  /*table-layout: fixed;*/
+	}
+    
+	#menu li{
+        /*text-align:center;*/
+        display: table-cell;
+        /*text-align: center;*/
+       /*width:auto;*/
+       /*margin:0 auto;*/
+		
+	}
+
+.navbar-header {
+  text-align:right;
+display:block;
+}
+
+		#menu li a{
+			text-decoration:none;
+			color: white;
+            background-color:transparent
+		}
+		#menu li a:hover {
+			background-color:#EEB711;
+			border-bottom:5px solid #86B82A;
+		}
+@media screen and (max-width: 699px) {
+    #menu li {
+    width:100%;
+    }
+    .addis-main-nav #notify-box{
+	
+	background:#B8eB5D;
+	list-style-type:none;
+	word-wrap: break-word;
+	
+	display:block;
+	width:100%;
+}
+   
+}
+@media screen and (min-width: 699px) {
+    .navbar-header
+    {
+        /*height:200px;*/
+        display:none;
+    }
+}
+/*.addis-main-nav */
+#notify-box{
+	
+	background:#B8eB5D;
+	list-style-type:none;
+	word-wrap: break-word;
+	height:auto;
+	display:block;
+	width:50%;
+}
+#notify-box{
+	max-height:400px;
+	display:none;
+	overflow:scroll;
+
+}
+	/*.addis-main-nav */
+	#notify-box li{
+		padding:10px;
+		height:25%;
+		word-wrap:break-word;
+		width:100%;
+	}
+	/*.addis-main-nav */
+	#notify-box a,p{
+		width:100%;
+		height:100%;
+		word-wrap:break-word;
+		white-space:normal
+	}
+#footer{
+	bottom:0;
+ background:white;
+	width:100%;
+}
+
+.mobile-menu-icon{	
+ 		min-height:20px;
+ 		min-width:20px;
+ 	z-index:10;
+ 		 background: url("img/mobile_nav.png");
+ 		  background-repeat: no-repeat;
+		  background-size: 100% 100%;
+		  /*background-color:red;*/
+ 		 /*background-color:red;*/
+ 		/*text-align:center;*/
+ 		/*background:red;*/
+ 	}

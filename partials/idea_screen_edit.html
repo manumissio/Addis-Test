@@ -1,0 +1,168 @@
+
+    <section id="profile">
+        <div class="panel panel-default personal-info">
+            <div class="panel-heading text-dark">
+                <h4>
+                    <strong>{{idea.TITLE}}</strong>
+                    <input type='text' ng-keyup="titleCheck()" ng-model='changes.new_title' placeholder="Change Title?"/>
+                    <a ng-click='edit_idea(changes.new_title, idea.TITLE, changes.new_description, idea.DESCRIPTION, changes.location)' ng-show='changes' ><strong>SAVE CHANGES</strong></a>
+               
+                </h4>
+            </div>
+            <div class="panel-body">
+                <div class="col-xs-4">
+                    <div class="col-xs-12" style="margin-bottom: 0px; padding-right: 0px;">
+                        <div class="col-xs-12 photo">
+                            <img class="img-responsive" ng-src="{{idea.IDEA_IMG_PATH}}" ng-show="idea.IDEA_IMG_PATH" id="profile_img"/>
+                            <img class="img-responsive" ng-hide="idea.IDEA_IMG_PATH" ng-src="images/default_idea.png"  />
+                        </div>
+                        <div class='col-xs-12'>
+                        	<input type="file" name="profile_img" style="display: none;" id="profile_img_upload"/>
+                            <button class="btn btn-primary" id="profile_img_add" ng-hide="idea.IDEA_IMG_PATH" ng-click="addProfileImage();"><i class="icon-edit">+</i></button>
+                            <button class="btn btn-danger" id="profile_img_delete" ng-show="idea.IDEA_IMG_PATH" ng-click="removeProfileImage();"><i class="icon-remove">-</i></button>
+                        </div>
+                            
+                        </div>
+                    </div>
+                    <div class="col-xs-8" style="margin-bottom: 0px;">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <button class="col-xs-12 btn btn-default"><i class="cg-icon-idea"></i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{profile.idea_count}} Ideas</button>
+                            </div>
+                            <div class="col-xs-12">
+                                <button class="col-xs-12 btn btn-default"><i class="cg-icon-like"></i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{profile.like_count}} Likes</button>
+                            </div>
+                            <div class="col-xs-12">
+                                <button class="col-xs-12 btn btn-default"><i class="cg-icon-collaboration"></i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{profile.collaboration_count}} Collaborations</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-default categories">
+            <div class="panel-heading">
+                <h4 class="panel-title text-muted">
+                    Categories
+                </h4>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                	<h5>Idea's Topics</h5>
+                	<div class="category-item" ng-click="addRemoveCategory(category.TOPICNAME,'delete_idea_topic', idea.TITLE)" ng-repeat="category in categories">{{category.TOPICNAME}}<i class="action-remove icon-minus-sign"></i></div>
+                	<hr>
+                	<h5>Available Topics</h5>
+                    <div class="category-item" ng-click="addRemoveCategory(topic.TOPICNAME, 'idea_topic', idea.TITLE)" ng-repeat="topic in topics" ng-show="catArray.indexOf(topic.TOPICNAME)==-1">{{topic.TOPICNAME}}
+                    	<i class="action-remove icon-plus-sign"></i></div>
+                    <!-- <div class="category-item"><input type="text" ng-model="adding_category" placeholder="Add Category"/> <i class="action-add icon-plus-sign" ng-click="addCategory()"></i></div> -->
+                </div>
+            </div>  
+        </div>
+        <div class="panel panel-default categories">
+            <div class="panel-heading">
+                <h4 class="panel-title text-muted">
+                    Addressed Stakeholders
+                </h4>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                	<h5>Idea's Addressees</h5>
+                    <div class="category-item" ng-repeat="s in addressed_to" ng-click="addRemoveCategory(s.STAKEHOLDER,'delete_addressed_to', idea.TITLE)">{{s.STAKEHOLDER}} <i class="action-remove icon-minus-sign"></i></div>
+                	<hr>
+                	<h5>Available Addressees</h5>
+                    <div class="category-item" ng-repeat="sh in addressed" ng-click="addRemoveCategory(sh.STAKEHOLDER,'addressed_to', idea.TITLE)" ng-show="addArray.indexOf(sh.STAKEHOLDER)==-1">{{sh.STAKEHOLDER}} 
+                    	<i class="action-remove icon-plus-sign"></i>
+                    	</div>
+                    <!-- <div class="category-item"><input type="text" ng-model="adding_category" placeholder="Add Category"/> <i class="action-add icon-plus-sign" ng-click="addCategory()"></i></div> -->
+                </div>
+            </div>  
+        </div>
+        <div class="panel panel-default categories">
+            <div class="panel-heading">
+                <h4 class="panel-title text-muted">
+                    Location
+                </h4>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+               		{{idea.LOCATION}}
+               	</div>
+               	<div class="row">
+               		<input ng-model='changes.location.country' type='text' placeholder="Country"/>
+               		<input ng-model='changes.location.city' type='text' placeholder="City"/>
+               		<input ng-model='changes.location.state' type='text' placeholder="State/Province"/>
+               	</div>
+            </div>  
+        </div>
+        <!-- <div class="panel panel-default about">
+            <div class="panel-heading">
+                <h4 class="panel-title text-muted">NAME OF MY IDEA</h4>
+            </div>
+            <div class="panel-body">
+                <strong><input ng-model="profile.about" size="100"></input></strong>
+            </div>
+
+        </div>         -->       
+        <div class="panel panel-default about">
+            <div class="panel-heading">
+                <h4 class="panel-title text-muted">DESCRIPTION OF {{idea.TITLE |uppercase}}</h4>
+            </div>
+            <div class="panel-body">
+                <strong>
+                	{{idea.DESCRIPTION}}
+                	<textarea ng-model="changes.new_description" placeholder='Input a new description here'></textarea></strong>
+            </div>
+            <!-- <div class="panel-footer text-center">
+                <a href="#" class="panel-title"><strong>Read More</strong></a>
+            </div> -->
+        </div>
+<!--         <div class="panel panel-default about">
+        <div class="panel-heading">
+        <h4 class="panel-title text-muted" style="text-align:center; padding-top: 10px">COMMENT</h4>
+        </div>
+            <div class="panel-body">
+                <strong><textarea></textarea></strong>
+            </div>
+        </div>  -->     
+        <!-- <div class="container">
+          <form role="form">
+            <div class="form-group">
+              <label for="comment">Comment</label>
+              <textarea class="form-control" rows="5" id="comment"></textarea>
+            </div>
+          </form>
+          <button type="button" class="btn btn-primary" style="background-color: #0F9D58">Post Comment</button>
+        </div> -->      
+        
+        <!-- <div class="panel panel-default ideas" ng-repeat="idea in profile.ideas track by $index">
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-xs-5">
+                        <div class="col-xs-12 picture">
+                            <img ng-src="{{idea.content_img}}" />
+                        </div>
+                    </div>
+                    <div class="col-xs-7 description">
+                        
+                        <div>
+                            <div class="cg-icon-location" style="height: 17px; width: 22px; float:left;margin-top:5px">
+                            </div>
+                            <div><h5 class="text-muted">{{idea.location_city}} {{idea.location_state}}, {{idea.location_country}}</h5></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-4">
+                                <strong><i class="cg-icon-people"></i>{{idea.collaborations}}</strong>
+                            </div>
+                            <div class="col-xs-4">
+                                <strong><i class="cg-icon-comment"></i>{{idea.comments}}</strong>
+                            </div>
+                            <div class="col-xs-4">
+                                <strong><i class="cg-icon-favourite"></i>{{idea.favourites}}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> -->
+    </section>
+    

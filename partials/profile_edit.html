@@ -1,0 +1,128 @@
+
+
+   
+    <section id="profile">
+        <div class="panel panel-default personal-info">
+        	<!-- <div ng-repeat='t in topics'>{{t.TOPICNAME}}</div> -->
+            <div class="panel-heading text-dark">
+                <h4> 
+                	<label ng-model='user.USERNAME'>{{user.USERNAME}}</label>
+                	<input type='text' ng-keyup="usernameCheck()" ng-model='changes.username' placeholder="Change Username?"/>
+                    <a ng-click='edit_profile(changes.username, changes.about, changes.location, changes.img)' ng-show='changes' ><strong>SAVE CHANGES</strong></a>
+                </h4>
+                <label class='hidden' id="un_check"></label>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-xs-4" style="margin-bottom: 0px; padding-right: 0px;">
+                        <div class="col-xs-12 photo">
+                            <img ng-hide="user.PROFILE_PATH" class='img-responsive' src="../test/images/default_user.jpg"/>
+                            <img ng-show="user.PROFILE_PATH" class='img-responsive' ng-src="{{user.PROFILE_PATH}}"/>
+                            <input id='img_ul' type="file" name="profile_img" ng-model="changes.img" ng-hide='user.PROFILE_PATH' id="profile_img_upload"/>
+                            
+                            <button class="btn btn-primary col-xs-12" id="profile_img_add" ng-hide="user.PROFILE_PATH" ng-click="upload_image('user_image', 'meh');"><i class="icon-edit"></i></button>
+                            <button class="btn btn-danger" id="profile_img_delete" ng-show="user.PROFILE_PATH" ng-click="removeProfileImage();"><i class="icon-remove"></i></button>
+                        </div>
+                    </div>
+                    <div class="col-xs-8" style="margin-bottom: 0px;">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <button class="col-xs-12 btn btn-default"><i class="cg-icon-idea"></i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{profile.idea_count}} Ideas</button>
+                            </div>
+                            <div class="col-xs-12">
+                                <button class="col-xs-12 btn btn-default"><i class="cg-icon-like"></i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{profile.like_count}} Likes</button>
+                            </div>
+                            <div class="col-xs-12">
+                                <button class="col-xs-12 btn btn-default"><i class="cg-icon-collaboration"></i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{profile.collaboration_count}} Collaborations</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-default categories">
+            <div class="panel-heading">
+                <h4 class="panel-title text-muted">
+                    Topics
+                </h4>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                	<h5>Your Topics</h5>
+                    <div ng-model='category' ng-show="category.TOPICNAME" class="row category-item" ng-repeat="category in categories track by $index" ng-click="addRemoveCategory(category, 'user_topic_delete')">
+                    		{{category.TOPICNAME}} 
+                    </div>
+                  <hr>
+                  <h5>Available Topics</h5>
+                    <div class="row category-item"  ng-repeat="category in topics track by $index" ng-show="catArray.indexOf(category.TOPICNAME)==-1" ng-click="addRemoveCategory(category, 'user_topic')" 
+                    ng-model="category.TOPICNAME"> 
+                    		{{category.TOPICNAME}} 
+                    		<!-- <i class="action-remove icon-minus-sign" ng-click="deleteCategory($index)"></i> -->
+                    </div>
+                    <!-- <div class="row category-item"><input type="text" ng-model="adding_category" placeholder="Add Category"/> <i class="action-add icon-plus-sign" ></i></div> -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel panel-default about">
+            <div class="panel-heading">
+                <h4  class="panel-title text-muted">
+                    ABOUT ME
+                </h4>
+            </div>
+            <div class="panel-body">
+                <strong>{{user.ABOUT}}<textarea ng-model="changes.about" ng-model="changes.about" placeholder='Type a small paragraph about yourself'></textarea></strong>
+            </div>
+           
+        </div>
+        
+        <div class="panel panel-default categories">
+            <div class="panel-heading">
+                <h4 class="panel-title text-muted">
+                    Location{{user.LOCATION_COUNTRY}}
+                </h4>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+               		<strong>{{user.LOCATION_CITY}}<span ng-show='user.LOCATION_STATE_PROV'>, </span>{{user.LOCATION_STATE_PROV}}<span ng-show='user.LOCATION_STATE_PROV'>, </span>{{user.LOCATION_COUNTRY}}</strong>
+               	</div>
+               	<hr>
+               	<div class="row">
+               		<input type='text' ng-model='changes.location.country' placeholder="Country"/>
+               		<input type='text' ng-model='changes.location.city' placeholder="City"/>
+               		<input type='text' ng-model='changes.location.state' placeholder="State/Province"/>
+               	</div>
+               	
+            </div>  
+        </div>
+      
+    </section>
+    <!-- <footer id="footer">
+        <div class="tabs tabs-icon-top">
+            <div class="tab-item">
+                <div>
+                    <a class="active"><i class="icon-home"></i><br>Home</a>
+                </div>
+            </div>
+            <div class="tab-item">
+                <div>
+                    <a><i class="icon-search"></i><br>Search</a>
+                </div>
+            </div>
+            <div class="tab-item round">
+                <div>
+                    <a><i class="icon-edit"></i><br>Create</a>
+                </div>
+            </div>
+            <div class="tab-item">
+                <div>
+                    <a><i class="icon-envelope-alt"><span class="badge bg-danger"></span></i><br> Message</a>
+                </div>
+            </div>
+            <div class="tab-item">
+                <div>
+                    <a><i class="icon-user"></i><br>My Profile</a>
+                </div>
+            </div>
+        </div>
+    </footer> -->
