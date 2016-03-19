@@ -287,7 +287,7 @@ fieldset[disabled] a.btn {
   background-repeat: no-repeat;
   background-size: contain; }
   
-  
+ 
 
 .cg-icon-idea {
   background: url("img/icon-idea.png");
@@ -360,6 +360,16 @@ fieldset[disabled] a.btn {
   /*float: left;*/
   width: 25px;
   height: 22px; }
+  
+  .cg-icon-view {
+  background: url("img/icon-view.png");
+  display: inline-block;
+  background-repeat: no-repeat;
+  background-size: contain;
+  /*float: left;*/
+  width: 25px;
+  height: 22px; }
+  
 .ideas .picture {
   padding: 0px;
   position: relative;
