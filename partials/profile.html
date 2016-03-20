@@ -3,17 +3,17 @@
         
         <!-- User Info -->
         <div class="panel panel-default personal-info">
-            <div class="panel-heading text-dark row">
-                <h4 class='col-xs-9'>
+            <div class=" row panel-heading text-dark">
+                <div class='col-xs-9'>
                     <strong data-content = 'USERNAME'>{{user.USERNAME}}</strong>
-                </h4>
-                <h4><a class='addis-link col-xs-3' ng-show='user_username == user.USERNAME' ng-href='#profile_edit/{{user.USERNAME}}'><strong>EDIT</strong></a></h4>
+                </div>
+                <div><a class='addis-link col-xs-3' ng-show='user_username == user.USERNAME' ng-href='#profile_edit/{{user.USERNAME}}'><strong>EDIT</strong></a></div>
             </div> 
             <div class="panel-body">
-                <div class="row">
+                <div class="">
                     <div class="col-xs-12 col-sm-4" style="margin-bottom: 0px; padding-right: 0px;">
                         <div class="col-xs-12 photo">
-                            <img ng-hide="user.PROFILE_PATH" class=' img-responsive' src="images/default_user.jpg"/>
+                            <img ng-hide="user.PROFILE_PATH" class='default-user-img img-responsive' src="images/default_user.jpg"/>
                             <img ng-show="user.PROFILE_PATH" class='img-responsive' ng-src="{{user.PROFILE_PATH}}"/>
                         </div>
                     </div>
@@ -188,7 +188,7 @@
                                		<span><i class="cg-icon-location" ng-show=" idea.LOCATION_CITY || idea.LOCATION_STATE_PROV || idea.LOCATION_COUNTRY"></i>{{idea.LOCATION_CITY}}</span>
                                		<span ng-show="(idea.LOCATION_CITY && idea.LOCATION_CITY != 'null') || (idea.LOCATION_COUNTRY && idea.LOCATION_COUNTRY != 'null')">, </span>
                                		<span ng-show="idea.LOCATION_STATE_PROV != 'null'">{{idea.LOCATION_STATE_PROV}}</span>
-                               		<span ng-show="(idea.LOCATION_CITY &&idea.LOCATION_CITY != 'null') || (idea.LOCATION_STATE_PROV && idea.LOCATION_STATE_PROV != 'null')">, </span>
+                               		<span ng-show="(idea.LOCATION_CITY && idea.LOCATION_CITY != 'null') || (idea.LOCATION_STATE_PROV && idea.LOCATION_STATE_PROV != 'null')">, </span>
                                		<span>{{idea.LOCATION_COUNTRY}}</span>
                                </div>
                                 
@@ -213,5 +213,6 @@
                             </div>
                         </div>
                     </div>
+                    <div class='row btn center' ng-click="showMoreIdeas()"><a class='center addis-link'><strong >SHOW MORE IDEAS</strong></a></div>
         <!-- My Ideas End -->
     </section>
