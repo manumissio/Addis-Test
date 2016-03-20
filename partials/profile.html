@@ -3,7 +3,7 @@
         
         <!-- User Info -->
         <div class="panel panel-default personal-info">
-            <div class="panel-heading text-dark">
+            <div class=" row panel-heading text-dark">
                 <div class='col-xs-9'>
                     <strong data-content = 'USERNAME'>{{user.USERNAME}}</strong>
                 </div>
@@ -188,7 +188,7 @@
                                		<span><i class="cg-icon-location" ng-show=" idea.LOCATION_CITY || idea.LOCATION_STATE_PROV || idea.LOCATION_COUNTRY"></i>{{idea.LOCATION_CITY}}</span>
                                		<span ng-show="(idea.LOCATION_CITY && idea.LOCATION_CITY != 'null') || (idea.LOCATION_COUNTRY && idea.LOCATION_COUNTRY != 'null')">, </span>
                                		<span ng-show="idea.LOCATION_STATE_PROV != 'null'">{{idea.LOCATION_STATE_PROV}}</span>
-                               		<span ng-show="(idea.LOCATION_CITY &&idea.LOCATION_CITY != 'null') || (idea.LOCATION_STATE_PROV && idea.LOCATION_STATE_PROV != 'null')">, </span>
+                               		<span ng-show="(idea.LOCATION_CITY && idea.LOCATION_CITY != 'null') || (idea.LOCATION_STATE_PROV && idea.LOCATION_STATE_PROV != 'null')">, </span>
                                		<span>{{idea.LOCATION_COUNTRY}}</span>
                                </div>
                                 
