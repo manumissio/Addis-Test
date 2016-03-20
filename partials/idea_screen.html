@@ -85,24 +85,17 @@
           </form>
           <button type="button" ng-click="makeComment(comment, idea.TITLE, 'idea_message')" class="btn  btn-addis-green">Post Comment</button>
        	<div ng-show="idea_comments">
-       		
-	       	
-	       	<!-- <div class='row idea-comment-header'>
-	       		<label class='col-sm-2 hidden-xs pull-right'>Time Posted</label>
-	       		<strong class='col-xs-2 pull-right'>Commenter</strong>
-	       		
-	       		<label class='pull-right col-xs-8'>Content</label>		
-	       	</div> -->
 	       	<hr/>
 	       	<div class='row comment' ng-repeat="comment in idea_comments" class='idea-comment'>
-	       		<div class='delete_comment col-xs-2  col-sm-1 btn'></div>
-                <label class='col-xs-12 col-sm-12 pull-right'><a class='addis-link' ng-href="#profile/{{comment.USERNAME}}">By: {{comment.USERNAME}}</a></label>                
+	       		<div ng-show="user_username == comment.USERNAME" style="position: absolute; left:0; margin:auto;" class='delete_comment col-xs-2  col-sm-1 btn' ng-click="deleteComment(comment.MSG_ID)"></div>
+	       		<div class='img-wrapper'> 
+	       			<img class='img-responsive' ng-show="comment.IMG_PATH" ng-src="{{comment.IMG_PATH}}" alt='no image	'/>
+	       			<img class='img-responsive' ng-hide="comment.IMG_PATH" ng-src="images/default_user_xs.jpg" alt='no image	'/>
+	       		</div>
+	       		
+                <label class='col-xs-12 col-sm-12 pull-right'><a class='addis-link' ng-href="#profile/{{comment.USERNAME}}">{{comment.USERNAME}}</a></label>                
 	       		<label class='hidden-xs col-sm-12 pull-right'>Posted at: {{comment.CREATED_TIMESTAMP}}</label>
-                <label class='pull-right col-sm-6'>Content: {{comment.CONTENT}}</label>                    
-
-	       		
-
-	       		
+                <label class='pull-right col-sm-6'>Content: {{comment.CONTENT}}</label>                    	
 	       	</div>
        </div>
        <div ng-hide='idea_comments'><hr><strong>Be the first to comment!!!</strong></div>     

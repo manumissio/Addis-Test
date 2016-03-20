@@ -6,6 +6,11 @@ app
     return function (input) {
         return new Date(input);
     };
+})
+.filter('asNumber', function(){
+	return function(input){
+		return Number(input);
+	};
 });
 function setUs(un){us=un;};
 // app.run(['$route', function($route)  {
@@ -166,9 +171,11 @@ $scope.location = $location.url();
 console.log($scope.location);
  
 }])
-.controller("userCtrl",['$scope','$routeParams', '$location', function($scope, $routeParams, $location){
+.controller("userCtrl",['$scope','$routeParams', '$location', 'IdeaService', 'UserService', function($scope, $routeParams, $location, IdeaService, UserService){
 	//$scope.$apply(function(){
 		$scope.user_username = readCookie('user');
+		$scope.idea_count = 5;
+		$scope.idea_offset = 0;
 		// if($location.url().indexOf('signup')){
 			// $('.addis-main-nav').css('display', 'none');
 			// $('#banner').css('display','none');
@@ -180,8 +187,8 @@ console.log($scope.location);
 		action:'user_procedure',
 		sp:'load_profile',
 		un:$routeParams.un,//readCookie('user'),
-		idea_count:5,
-		idea_offset:0
+		idea_count:$scope.idea_count,
+		idea_offset:$scope.idea_offset
 		};
 		
 		
@@ -199,26 +206,97 @@ console.log($scope.location);
                 		$scope.user = $scope.profile['user'][0];
                 		$scope.categories = $scope.profile['categories'];
                 		$scope.ideas = $scope.profile['ideas'];
+                		if($scope.ideas != false){
+                			$scope.idea_offset = $scope.ideas.length;
+                		}
                 		if($scope.user.LOCATION_CITY == 'null') delete $scope.user.LOCATION_CITY;
                 		if($scope.user.LOCATION_STATE_PROV == 'null') delete $scope.user.LOCATION_STATE_PROV;
                 		if($scope.user.LOCATION_COUNTRY == 'null') delete $scope.user.LOCATION_COUNTRY;
                 	});
                 	
-                	console.log($scope.profile['user'][0]);
-                console.log($scope.profile['categories']);
-                	console.log($scope.profile['ideas'][0]);
+                //	console.log($scope.profile['user'][0]);
+                //console.log($scope.profile['categories']);
+                //	console.log($scope.profile['ideas'][0]);
         			//return user;
                  	
                 });
 	}
 	
-                
+    $scope.showMoreIdeas = function(){
+    		UserService.updateIdeaList($scope.user_username, $scope.idea_count, $scope.idea_offset,function(feedback){
+    				console.log(feedback);
+    			if(JSON.parse(feedback)){
+    			
+    				 $scope.profile = JSON.parse(feedback);
+            	 	$scope.$apply(function(){
+
+            		var ideas = $scope.profile['ideas'];
+            		
+            		for(var i in ideas){
+	    				$scope.ideas.push(ideas[i]);
+	    				
+	    			}
+	    			$scope.idea_offset=$scope.ideas.length;
+            	  });
+    			}
+    			
+    		});
+    };        
 	
 	//console.log('test: '+data);
 	//$scope.user = data['user'];
 	
 	//data = renderProfile(readCookie('user'));
 	
+	//Idea Like
+	$scope.likeIdea = function(sp,idea, user){
+		IdeaService.likeIdea(sp, idea, user, function(feedback){
+			if(sp=='idea_like'){
+				if(feedback=='true'){
+					$scope.$apply(function(){
+						if($scope.likes == undefined) $scope.likes = [];
+						$scope.likes.push(idea);
+						console.log($scope.likes);
+						for( var id in $scope.ideas){
+							if($scope.ideas[id].TITLE == idea){
+								console.log($scope.ideas[id].LIKES);
+								$scope.ideas[id].LIKES=Number($scope.ideas[id].LIKES)+1;
+								console.log('type', typeof($scope.ideas[id].LIKES,'  = ', $scope.ideas[id].LIKES));
+							}
+								
+						}
+						
+					});	
+				}
+			}
+			else 
+			{
+				if(feedback=='true'){
+					$scope.$apply(function(){
+						for(var i in $scope.likes){
+							if(idea == $scope.likes[i])
+								$scope.likes.splice(i, 1);
+								console.log('deleted',$scope.likes);
+							}
+								
+								for( var id in $scope.ideas){
+									if($scope.ideas[id].TITLE == idea)
+									{
+										$scope.ideas[id].LIKES=Number($scope.ideas[id].LIKES)-1;
+										console.log('type', typeof($scope.ideas[id].LIKES,'  = ', $scope.ideas[id].LIKES));
+										}
+									}	
+						});
+								
+						
+					}	
+				}
+				
+				
+		});
+		//console.log(idea, user);	
+	};
+	//End Like
 
 	
 	
@@ -236,6 +314,7 @@ console.log($scope.location);
 				  IdeaService.get_comments($scope.idea.TITLE, $scope.idea_offset, readCookie('user'),function(feedback){
 		                	$scope.$apply(function(){
 		                			$scope.idea_comments = JSON.parse(feedback);
+		                		//	console.log($scope.idea_comments);
 		                	});
 		                
 		                });
@@ -247,7 +326,13 @@ console.log($scope.location);
 		IdeaService.delete_comment(readCookie('user'), msg_id, function(feedback){
 			if(feedback == 'true'){
 				//remove from the list
-				
+				IdeaService.get_comments($scope.idea.TITLE, $scope.idea_offset, readCookie('user'),function(feedback){
+		                	$scope.$apply(function(){
+		                			$scope.idea_comments = JSON.parse(feedback);
+		                		//	console.log($scope.idea_comments);
+		                	});
+		                
+		                });
 			}
 			else{
 				//do nothing
@@ -546,37 +631,80 @@ console.log($scope.location);
 	
 	};
 }])
-.controller("feedCtrl", function($scope, $http){
+.controller("feedCtrl",["$scope", "$http", "IdeaService", function($scope, $http, IdeaService){
+	$scope.user_username = readCookie('user');
+	$scope.idea_count = 10;
+	$scope.idea_offset=0;
 	var feedSort = 'date';
 	
-	var feeddata = {
+	$scope.likeIdea = function(sp,idea, user){
+		IdeaService.likeIdea(sp, idea, user, function(feedback){
+			if(sp=='idea_like'){
+				if(feedback=='true'){
+					$scope.$apply(function(){
+						if($scope.likes == undefined) $scope.likes = [];
+						$scope.likes.push(idea);
+						console.log($scope.likes);
+						for( var id in $scope.ideas){
+							if($scope.ideas[id].TITLE == idea){
+								console.log($scope.ideas[id].LIKES);
+								$scope.ideas[id].LIKES=Number($scope.ideas[id].LIKES)+1;
+								console.log('type', typeof($scope.ideas[id].LIKES,'  = ', $scope.ideas[id].LIKES));
+							}
+								
+						}
+						
+					});	
+				}
+			}
+			else 
+			{
+				if(feedback=='true'){
+					$scope.$apply(function(){
+						for(var i in $scope.likes){
+							if(idea == $scope.likes[i])
+								$scope.likes.splice(i, 1);
+								console.log('deleted',$scope.likes);
+							}
+								
+								for( var id in $scope.ideas){
+									if($scope.ideas[id].TITLE == idea)
+									{
+										$scope.ideas[id].LIKES=Number($scope.ideas[id].LIKES)-1;
+										console.log('type', typeof($scope.ideas[id].LIKES,'  = ', $scope.ideas[id].LIKES));
+										}
+									}	
+						});
+								
+						
+					}	
+				}
+				
+				
+		});
+		//console.log(idea, user);	
+	};
+	if($scope.user_username == undefined){
+		var feeddata = {
+			
+	        action:'feed',
+	        sortby: feedSort,
+	        idea_count:$scope.idea_count,
+	        idea_offset:$scope.idea_offset
+    	};
+	}
+	else{
+		var feeddata = {
+		un : $scope.user_username,
         action:'feed',
         sortby: feedSort,
-        idea_count:10,
-        idea_offset:0
+        idea_count:$scope.idea_count,
+        idea_offset:$scope.idea_offset
     };
+	}
+	
     
     $scope.ideas = [];
-    
-    
-    // $http({
-  		// method: 'POST',
-  		// data:feeddata,
- 		// url: 'app.php'
-//  		
-	// }).then(function successCallback(response) {
-		// console.log('idea new feed', response.data	);
-		 // $scope.ideas = $.parseJSON(response.data);
-    	// // this callback will be called asynchronously
-    	// // when the response is available
-  	// }, function errorCallback(response) {
-   		// // called asynchronously if an error occurs
-    	// // or server returns response with an error status.
-  	// });
-
-  	   // $http.post("app.php", feeddata).success(function(data, status) {
-            // console.log(data);
-       // });
   	
 	$.ajax
     ({
@@ -585,9 +713,13 @@ console.log($scope.location);
         url:"app.php"
     }).done(function(feedback){
     	$scope.$apply(function() {
-	        $scope.ideas = $.parseJSON(feedback);
+	        $scope.ideas = $.parseJSON(feedback)['ideas'];
+	         $scope.likes = $.parseJSON(feedback)['likes'];
 	        for(var i in $scope.ideas){
-	        	console.log(i, 'idea');
+	        //	$scope.ideas[i].LIKES = Number($scope.ideas[i].LIKES );
+	        //	$scope.ideas[i].COMMENTS = Number($scope.ideas[i].COMMENTS );
+	        //	$scope.ideas[i].VIEWS = Number($scope.ideas[i].VIEWS );
+	        //	console.log(i, 'idea');
 	        	if($scope.ideas[i].LOCATION_CITY == 'null'){
 	        		delete $scope.ideas[i].LOCATION_CITY;
 	        	}
@@ -599,11 +731,12 @@ console.log($scope.location);
 	        	}
 	        }
     	});
-        console.log('feed', $scope.ideas);
+    	console.log('likes', $scope.likes);
+       // console.log('feed', $scope.ideas);
         
      });
      
-});
+}]);
 
 
 app.config(function ($routeProvider, $locationProvider) {
@@ -662,27 +795,7 @@ app.config(function ($routeProvider, $locationProvider) {
   
   
     
-  function setProfile(un){
-	
-var data = {
-		action:'user_procedure',
-		sp:'load_profile',
-		un:un,
-		idea_count:5,
-		idea_offset:0
-	};
-	 $.ajax({
-                    type: "POST",
-                    data: data,
-                    url: "app.php"
-                }).done(function (feedback, textStatus, xhr) {
-                	
-                	var user = JSON.parse(feedback);
-                	return 'hi';
-        			//return user;
-                 
-                });
-}
+ 
 
 
 
@@ -691,6 +804,8 @@ var data = {
             $scope.categories=[];
             $scope.catArray=[];
             $scope.user_username = readCookie('user');
+            $scope.idea_count = 5; 
+            $scope.idea_offset = 0;
             
             $scope.upload_image = function( sp, content){
             	console.log('image: ',$('#img_ul')[0].files[0]);
@@ -810,8 +925,8 @@ var data = {
 				action:'user_procedure',
 				sp:'load_profile',
 				un:$routeParams.un,//readCookie('user'),
-				idea_count:5,
-				idea_offset:0
+				idea_count:$scope.idea_count,
+				idea_offset:$scope.idea_offset
 			};
 			
 	
@@ -1108,6 +1223,30 @@ app.factory('UserService', [function(){
            // document.getElementById("ideaupdate_txtHint").innerHTML = feedback;
         });
     	
+    },
+    updateIdeaList:function(un,ic, io, callback){
+    	
+    	var data = {
+				action:'user_procedure',
+				update:'true',
+				sp:'load_profile',
+				un:un,
+				idea_count:ic,
+				idea_offset:io
+			};
+			
+	
+
+	
+	
+		$.ajax({
+				        type: "POST",
+	                    data: data,
+	                    url: "app.php"
+	                }).done(function (feedback) {
+	                	callback(feedback);
+	                	
+	                	});
     }
 	};
 }]);
@@ -1116,6 +1255,25 @@ app.factory('IdeaService', [function() {
 	
 	return {
 		//
+		likeIdea:function(sp, title, un, callback){
+					var data = {
+						action:'idea_procedure',
+						title:title,
+						sp:sp,
+						un:un
+					};
+		
+	
+					$.ajax({
+	                    type: "POST",
+	                    data: data,
+	                    url: "app.php"
+	                }).done(function (feedback, textStatus, xhr) {
+	                	
+	            		callback(feedback);
+	                
+	                });
+		},
 		get_comments:function(title, io,username, callback){
 			var data = {
 			action:'idea_procedure',
@@ -1171,8 +1329,11 @@ app.factory('IdeaService', [function() {
 	                    url: "app.php"
 	                }).done(function (feedback) {
 	                	if(feedback == 'true')
-	                	console.log('idea deleted');
-	                	else console.log('idea NOT deleted');
+	                		console.log('idea deleted', feedback);
+	                	else {
+	                		console.log('idea NOT deleted', feedback);
+	                	}
+	                		
 	            		callback(feedback);
 	                
 	                });

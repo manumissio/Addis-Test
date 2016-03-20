@@ -33,8 +33,11 @@
 	                            <div class="col-xs-4">
 	                                <strong><i class="cg-icon-comment pull-right"></i>{{idea.COMMENTS}}</strong>
 	                            </div>
-	                            <div class="col-xs-4">
-	                                <strong><i class="cg-icon-favourite pull-right"></i>{{idea.LIKES}}</strong>
+	                            <div class="col-xs-4" >
+	                                <strong ng-hide="likes && likes.indexOf(idea.TITLE)!=-1 " ng-click="likeIdea('idea_like', idea.TITLE, user_username )"><i  class="cg-icon-favourite pull-right"></i>{{idea.LIKES }}
+	                                	</strong>
+	                                <strong ng-show="likes && likes.indexOf(idea.TITLE)!=-1 " ng-click="likeIdea('delete_like',idea.TITLE, user_username )"><i class="cg-icon-favourite-liked pull-right"></i>{{idea.LIKES }}
+	                                	</strong>
 	                            </div>
                         	</div>
                             <!--  -->
