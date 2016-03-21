@@ -278,6 +278,7 @@ fieldset[disabled] a.btn {
   font-size: 14pt;
   color: #4C9DA4; }
 
+
 .cg-icon-like {
   background: url("img/icon-like.png");
   /*position: absolute;*/
@@ -287,7 +288,7 @@ fieldset[disabled] a.btn {
   background-repeat: no-repeat;
   background-size: contain; }
   
-  
+ 
 
 .cg-icon-idea {
   background: url("img/icon-idea.png");
@@ -360,6 +361,16 @@ fieldset[disabled] a.btn {
   /*float: left;*/
   width: 25px;
   height: 22px; }
+  
+  .cg-icon-view {
+  background: url("img/icon-view.png");
+  display: inline-block;
+  background-repeat: no-repeat;
+  background-size: contain;
+  /*float: left;*/
+  width: 25px;
+  height: 22px; }
+  
 .ideas .picture {
   padding: 0px;
   position: relative;

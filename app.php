@@ -602,6 +602,27 @@ function user_procedure($SP, $un){
 			break;
 		case 'load_profile':
 
+			if(isset($_POST['update'])){
+					$user_ideas_query = 'SELECT "TITLE", "DESCRIPTION", 
+						 case when "LOCATION_CITY" is null then ' .$s_q.$s_q. 'else "LOCATION_CITY" end 
+						 ||case when "LOCATION_STATE_PROV" is null then '.$s_q.$s_q.' else case when "LOCATION_CITY" is null then "LOCATION_STATE_PROV" else '.$s_q.', '.$s_q.'||"LOCATION_STATE_PROV"end end 
+						 || case when "LOCATION_COUNTRY" is null then '.$s_q.$s_q.' 
+							else case when "LOCATION_CITY" is null and "LOCATION_STATE_PROV" is null then "LOCATION_COUNTRY" 
+							when ("LOCATION_CITY" is null and "LOCATION_STATE_PROV" is not null) 
+								or ("LOCATION_CITY" is not null and "LOCATION_STATE_PROV" is null) then '.$s_q.', '.$s_q.'||"LOCATION_COUNTRY" 
+							 end end as "LOCATION",
+							 "LOCATION_CITY",
+							 "LOCATION_STATE_PROV",
+							 "LOCATION_COUNTRY"
+					       , "IDEA_IMG_PATH", "LIKES", "VIEWS", "COLLABORATORS", 
+					       "COMMENTS", "CREATED_TIMESTAMP"
+					  FROM "IdeaFeedList" where "CREATOR_ID"='.$uid.' order by "CREATED_TIMESTAMP" desc limit '.$_POST['idea_count'].'offset '.$_POST['idea_offset'];
+  					$result['ideas'] = pg_fetch_all(pg_query($conn, $user_ideas_query));
+			}
+			else
+			{
+				
+			
 					$qy = 'SELECT "USERNAME"
 								,"UserView"."ABOUT"
 								,"UserView"."PROFILE_PATH"
@@ -648,7 +669,7 @@ function user_procedure($SP, $un){
 						$abc = 'SELECT * from "USER"';
 						$result['categories'] = pg_fetch_all(pg_query($conn, $user_categories_query));
 						$res=json_encode($result);
-
+			}
 						echo json_encode($result);
 			break;
 			
@@ -776,7 +797,9 @@ function idea_procedure($SP, $un){
 	$u=pg_select($conn,'USER', array('USERNAME'=>$un));
 	$uid=$u[0]['USER_ID'];
 	$s_q = "'";
-	$title = $_POST['title'];
+	if(isset($_POST['title'])){
+		$title = $_POST['title'];	
+	}
 
 	
 	
@@ -786,12 +809,15 @@ function idea_procedure($SP, $un){
 		case 'idea_like':
 			$idea = pg_select($conn, 'IDEA', array('TITLE'=>$title));
 			$like_check = pg_select($conn, 'IDEA_LIKE', array('USER_ID'=>$uid, 'IDEA_ID'=>$idea[0]['IDEA_ID'])); 
-			$qy = 'SELECT "SP_newIdea_Like"('.$s_q.$uid.$s_q.','.$s_q.$idea[0]['IDEA_ID'].$s_q.','.$s_q.$isactive.$s_q.');';
 			
 			if(!$like_check){
 				$isactive = true;
+				$qy = 'SELECT "SP_newIdea_Like"('.$s_q.$uid.$s_q.','.$s_q.$idea[0]['IDEA_ID'].$s_q.','.$s_q.$isactive.$s_q.');';
 				$result = pg_query($conn, $qy);
-				return 'results from idea like '.$result;
+				if($result)
+					echo 'true';
+				else echo 'false';
+				//return 'results from idea like '.$result;
 			}
 
 			
@@ -800,7 +826,10 @@ function idea_procedure($SP, $un){
 			$idea = pg_select($conn, 'IDEA', array('TITLE'=> $_POST['title']));
 			$qy = 'SELECT "SP_deleteIdea_Like"('.$s_q.$uid.$s_q.','.$s_q.$idea[0]['IDEA_ID'].$s_q.');';
 				$result = pg_query($conn, $qy);
-				return 'results from delete of idea like '.$result;	
+				if($result)
+					echo 'true';
+				else echo 'false';
+			//	return 'results from delete of idea like '.$result;	
 			
 			break;
 	//idea view
@@ -856,7 +885,7 @@ function idea_procedure($SP, $un){
 				else echo 'false';
 		break;
 		case 'get_comments':
-			$qy='SELECT "TITLE", "USERNAME", "USER_ID", "CONTENT", "IS_COLLAB", 
+			$qy='SELECT "TITLE", "USERNAME", "USER_ID", "CONTENT", "IS_COLLAB", "MESSAGE_ID" as "MSG_ID", 
 	       "THREAD_ID", "MESSAGE_TYPE", "CREATED_TIMESTAMP"
 	  FROM "IdeaCommentMessagesView"
 	  where "TITLE" ='.$s_q.$_POST['title'].$s_q.'order by "CREATED_TIMESTAMP" desc limit 10 offset '.$_POST['idea_offset'];
@@ -878,7 +907,7 @@ function ideaFeed(){
 	$conn = dbConn();
 	$idea_count = 3;
 	$idea_offset = 1;
-	
+	//$results['likes']=array();
 	$query = 'SELECT "TITLE", "DESCRIPTION", 
 	 case when "LOCATION_CITY" is null then ' .$s_q.$s_q. 'else "LOCATION_CITY" end 
 	 ||case when "LOCATION_STATE_PROV" is null then '.$s_q.$s_q.' else case when "LOCATION_CITY" is null then "LOCATION_STATE_PROV" else '.$s_q.', '.$s_q.'||"LOCATION_STATE_PROV"end end 
@@ -893,7 +922,27 @@ function ideaFeed(){
        , "IDEA_IMG_PATH", "LIKES", "VIEWS", "COLLABORATORS", 
        "COMMENTS", "CREATED_TIMESTAMP"
   FROM "IdeaFeedList" order by "CREATED_TIMESTAMP" desc limit '.$_POST['idea_count'].'offset '.$_POST['idea_offset'].';';
-		$result=pg_fetch_all(pg_query($conn, $query));
+		$result['ideas']=pg_fetch_all(pg_query($conn, $query));
+		
+		//get liked ideas
+		if(isset($_POST['un']))
+		{
+				$u=pg_select($conn,'USER', array('USERNAME'=>$_POST['un']));
+					$uid=$u[0]['USER_ID'];
+					$index =0;
+					foreach ($result['ideas'] as &$i) {
+					$id=pg_select($conn, 'IDEA', array('TITLE'=>$i['TITLE']));
+					$res = pg_select($conn, 'IDEA_LIKE', array('IDEA_ID'=>$id[0]['IDEA_ID'], 'USER_ID'=>$uid));
+					if($res){
+						($result['likes'][$index] =  $i['TITLE']);
+						$index++;
+					}
+						
+				}
+		}
+		
+
+		//get likes end]
 		return json_encode($result);
 	pg_close($conn);
 }
