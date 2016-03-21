@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Profile View</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/font-awesome.min.css" rel="stylesheet">
+    <link href="css/animate.css" rel="stylesheet">
+    <link href="css/main.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <link rel="shortcut icon" href="images/ico/favicon.ico">
+    <link rel="apple-touch-icon" sizes="57x57" href="images/ico/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="images/ico/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="images/ico/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="images/ico/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="images/ico/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="images/ico/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="images/ico/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="images/ico/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="images/ico/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="images/ico/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/ico/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="images/ico/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="images/ico/favicon-16x16.png">
+    <link rel="manifest" href="images/ico/manifest.json">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="images/ico/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+    <script src="js/jquery.js"></script>
+    <script src="js/angular.min.js"></script>
+</head><!--/head-->
+<body ng-app="profileApp" ng-controller="profileCtrl">
+    <!--header-->
+    <header class="navbar navbar-inverse navbar-fixed-top wet-asphalt" role="banner">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span><i class="fa fa-bars"></i></span>
+                </button>          
+        <a class="navbar-brand" href="index.html"><img src="images/logo.png" alt="logo"></a>
+            </div>
+            <div class="collapse navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li class="nav-links"><a href="">Settings</a>
+                    </li>
+                    <li class="nav-links"><a href="profile_edit.html" >Profile Edit</a>
+                    </li>
+                    <li class="nav-links"><a href="contact-us.html" >Contact</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </header><!--/header-->
+    <section id="profile">
+        
+        <!-- User Info -->
+        <div class="panel panel-default personal-info">
+            <div class="panel-heading text-dark">
+                <h4>
+                    <strong>{{profile.firstname}} {{profile.lastname}}</strong>
+                </h4>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-xs-4" style="margin-bottom: 0px; padding-right: 0px;">
+                        <div class="col-xs-12 photo">
+                            <img ng-src="{{profile.profile_img}}"/>
+                        </div>
+                    </div>
+                    <div class="col-xs-8" style="margin-bottom: 0px;">
+                        <div class="row">
+                            <div class="col-xs-6" style="padding-right: 5px;">
+                                <button class="col-xs-12 btn btn-default"><i class="cg-icon-idea"></i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{profile.idea_count}} Ideas</button>
+                            </div>
+                            <div class="col-xs-6" style="padding-left: 5px;">
+                                <button class="col-xs-12 btn btn-default"><i class="cg-icon-like"></i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{profile.like_count}} Likes</button>
+                            </div>
+                        </div>
+                        <div class="row"> 
+                            <div class="col-xs-12">
+                                <button class="col-xs-12 btn btn-default"><i class="cg-icon-collaboration"></i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{profile.collaboration_count}} Collaborations</button>
+                            </div>
+                            <div class="col-xs-12" style="margin-bottom: 0px;">
+                                <button class="col-xs-12 btn btn-success" data-toggle="modal" data-target="#send_message_modal">
+                                    <i class="cg-icon-sendmsg"></i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Send Message
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div><!-- User Info End -->
+
+        <!-- Send Message Modal -->
+        <div id="send_message_modal" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <!-- Modal content-->
+                <form name="message" id="message_from" ng-submit="submitMessage();">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            <h4 class="modal-title">Send Message</h4>
+                        </div>
+                        <div class="modal-body">  
+                            <div class="form-group" ng-class="{'has-error': message.email.$dirty && message.email.$invalid}">
+                                <label for="message_from_email">Email address</label>
+                                <input type="email" name="email" class="form-control" id="message_from_email" ng-model="profile.sendmessage.email" placeholder="Email" required>
+                                <span class="control-label" ng-show="message.email.$dirty && message.email.$invalid">
+                                    <span ng-show="message.email.$error.required">Email is required.</span>
+                                    <span ng-show="message.email.$error.email">Invalid email address.</span>
+                                </span>
+                            </div>
+                            <div class="form-group" ng-class="{'has-error': message.subject.$dirty && message.subject.$invalid}">
+                                <label for="message_form_subject">Subject</label>
+                                <input type="text" name="subject" style="width: 100%;" class="form-control" id="message_form_subject" ng-model="profile.sendmessage.subject" placeholder="Subject">
+                            </div>
+                            <input type="hidden" name="username" ng-model="profile.username"/>
+                            <div class="form-group" ng-class="{'has-error': message.body.$dirty && message.body.$invalid}">
+                                <label for="message_form_body">Content</label>
+                                <textarea name="body" class="form-control" id="message_form_body" ng-model="profile.sendmessage.body" placeholder="Body" required></textarea>
+                                <span class="control-label" ng-show="message.body.$dirty && message.body.$invalid">
+                                    <span ng-show="message.body.$error.required">Content is required.</span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-default">Submit</button>
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </form>
+            </div>  
+        </div><!-- Send Message Modal End -->
+        
+        <!-- About Me -->
+        <div class="panel panel-default categories">
+            <div class="panel-heading">
+                <h4 class="panel-title text-muted">
+                    Categories
+                </h4>
+            </div>
+            <div class="panel-body" >
+                <div>
+                    <div class="category-item" ng-repeat="category in profile.categories track by $index">{{category}}</div>
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title text-muted">
+                    ABOUT ME
+                </h4>
+            </div>
+            <div class="panel-body">
+                <strong>{{profile.about}}</strong>
+            </div>
+            <div class="panel-footer text-center">
+                <a href="#" class="panel-title"><strong>Read More</strong></a>
+            </div>
+        </div><!-- About Me End -->
+
+        <!-- My Ideas -->
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title text-muted">
+                    MY IDEAS
+                </h4>
+            </div>
+        </div>
+        <div class="panel panel-default ideas" ng-repeat="idea in profile.ideas track by $index">
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-xs-5">
+                        <div class="col-xs-12 picture">
+                            <img ng-src="{{idea.content_img}}" />
+                        </div>
+                    </div>
+                    <div class="col-xs-7 description">
+                        <h4>{{profile.title}}</h4>
+                        <div>
+                            <div class="cg-icon-location" style="height: 17px; width: 22px; float:left;margin-top:5px">
+                            </div>
+                            <div><h5 class="text-muted">{{idea.location_city}} {{idea.location_state}}, {{idea.location_country}}</h5></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-4">
+                                <strong><i class="cg-icon-people"></i>{{idea.collaborations}}</strong>
+                            </div>
+                            <div class="col-xs-4">
+                                <strong><i class="cg-icon-comment"></i>{{idea.comments}}</strong>
+                            </div>
+                            <div class="col-xs-4">
+                                <strong><i class="cg-icon-favourite"></i>{{idea.favourites}}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- My Ideas End -->
+
+    </section>
+    <footer id="footer">
+        <div class="tabs tabs-icon-top">
+            <div class="tab-item">
+                <div>
+                    <a class="active"><i class="icon-home"></i><br>Home</a>
+                </div>
+            </div>
+            <div class="tab-item">
+                <div>
+                    <a><i class="icon-search"></i><br>Search</a>
+                </div>
+            </div>
+            <div class="tab-item round">
+                <div>
+                    <a><i class="icon-edit"></i><br>Create</a>
+                </div>
+            </div>
+            <div class="tab-item">
+                <div>
+                    <a><i class="icon-envelope-alt"><span class="badge bg-danger"></span></i><br> Message</a>
+                </div>
+            </div>
+            <div class="tab-item">
+                <div>
+                    <a><i class="icon-user"></i><br>My Profile</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.isotope.min.js"></script>
+    <script src="js/chosen.jquery.js"></script>
+    
+    <script>
+        var app = angular.module('profileApp', []);
+        app.controller('profileCtrl', function($scope, $http) {
+            $scope.sendmessage = {email: '', subject: '', body: ''};
+
+            $scope.submitMessage = function() {
+                alert("From: "+$scope.profile.email+
+                    "\n To:"+$scope.sendmessage.email+
+                    "\n SubjectMessage from: "+$scope.profile.username+"  "+$scope.sendmessage.subject+
+                    "\n Content: "+$scope.sendmessage.body);
+            };
+
+            $http.get("profile.json").success(function(response) {
+                $scope.profile=response;
+            });
+        });
+    </script>
+</body>

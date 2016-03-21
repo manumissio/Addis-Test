@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<head>
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/3.2.1/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <link rel="stylesheet" type="text/css" href="css/universe.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.1/jquery.min.js"></script>    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.8/angular.min.js"></script>
+
+</head>
+<body>
+    <section id="idea">
+        <div class="panel panel-default personal-info">
+            <div class="panel-heading text-dark row">
+                <h4 class='col-xs-9'>
+                    <strong>{{idea.TITLE}}</strong>
+                </h4>
+                <h4><a  class='addis-link col-xs-3' ng-show='idea_owner==user_username' ng-href='#idea_edit/{{idea.TITLE}}'><strong>EDIT</strong></a></h4>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-xs-4" style="margin-bottom: 0px; padding-right: 0px;">
+                        <div class="col-xs-12 photo">
+                            <img class="img-responsive" ng-show="idea.IDEA_IMG_PATH" ng-src="{{idea.IDEA_IMG_PATH}}" align="right" />
+                            <img class="img-responsive" ng-hide="idea.IDEA_IMG_PATH" ng-src="images/default_idea.png" align="right" />
+                        </div>
+                    </div>
+                    <div class="col-xs-8" style="margin-bottom: 0px;">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <button class="col-xs-12 btn btn-default">{{idea.COMMENTS}} Comment<i class="cg-icon-idea"></i></button>
+                            </div>
+                            <div class="col-xs-12">
+                                <button class="col-xs-12 btn btn-default"><span>{{idea.LIKES}} Likes</span><i class="cg-icon-like"></i></button>
+                            </div>
+                            <div class="col-xs-12">
+                                <button class="col-xs-12 btn btn-default">{{idea.VIEWS}} Views<i class="cg-icon-collaboration"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> 
+        <div class="panel panel-default categories">
+            <div class="panel-heading">
+                <h4 class="panel-title text-muted">
+                    Topics
+                </h4>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="category-item addis-link" ng-repeat="category in categories track by $index">{{category.TOPICNAME}} <i class="action-remove icon-minus-sign" ng-click="deleteCategory($index)"></i></div>
+
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-default categories">
+            <div class="panel-heading">
+                <h4 class="panel-title text-muted">
+                    Addressed To
+                </h4>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="category-item addis-link" ng-repeat="item in addressed_to track by $index">{{item.STAKEHOLDER}} <i class="action-remove icon-minus-sign" ng-click="deleteCategory($index)"></i></div>
+                </div>
+            </div>  
+        </div>         
+        <div class="panel panel-default about">
+            <div class="panel-heading">
+                <h4 class="panel-title text-muted">Decription of: {{idea.TITLE}}</h4>
+            </div>
+            <div class="panel-body">
+                <strong><label>{{idea.DESCRIPTION}}</label></strong>
+            </div>
+        </div>
+           
+    <div class="container">
+          <form role="form">
+            <div class="form-group">
+              <label for="comment">Comment</label>
+              <textarea class="form-control" rows="5" id="comment" ng-model="comment" placeholder = 'Post a comment!'></textarea>
+            </div>
+          </form>
+          <button type="button" ng-click="makeComment(comment, idea.TITLE, 'idea_message')" class="btn  btn-addis-green">Post Comment</button>
+       	<div ng-show="idea_comments">
+       		
+	       	
+	       	<!-- <div class='row idea-comment-header'>
+	       		<label class='col-sm-2 hidden-xs pull-right'>Time Posted</label>
+	       		<strong class='col-xs-2 pull-right'>Commenter</strong>
+	       		
+	       		<label class='pull-right col-xs-8'>Content</label>		
+	       	</div> -->
+	       	<hr/>
+	       	<div class='row comment' ng-repeat="comment in idea_comments" class='idea-comment'>
+	       		<div class='delete_comment col-xs-2  col-sm-1 btn'></div>
+                <label class='col-xs-12 col-sm-12 pull-right'><a class='addis-link' ng-href="#profile/{{comment.USERNAME}}">By: {{comment.USERNAME}}</a></label>                
+	       		<label class='hidden-xs col-sm-12 pull-right'>Posted at: {{comment.CREATED_TIMESTAMP}}</label>
+                <label class='pull-right col-sm-6'>Content: {{comment.CONTENT}}</label>                    
+
+	       		
+
+	       		
+	       	</div>
+       </div>
+       <div ng-hide='idea_comments'><hr><strong>Be the first to comment!!!</strong></div>     
+    </div> 
+ </section>
+ </body>
+ </html>
