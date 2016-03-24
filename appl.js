@@ -36,6 +36,15 @@ function deleteCookie( name ) {
 
 
 $(document).ready(function(){
+	var ucheck = readCookie('user');
+	if(ucheck == undefined)
+	{
+		$('#loginModal').modal('toggle');
+		 // $('#loginModal').modal({
+		 		// backdrop: 'static',
+    			// keyboard: false
+    			// });
+	}
 	
 	checkLogin();
 	if(readCookie('user')){
@@ -496,7 +505,9 @@ function newFeedItem(data){
 	
 }
 
-
+function terms(){
+	$('#termsContent').loadTemplate('partials/terms.html');
+}
 
 
 

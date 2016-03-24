@@ -14,17 +14,22 @@
             </div>
             <div class="panel-body">
                 <div class="row">
-                    <div class="col-xs-4" style="margin-bottom: 0px; padding-right: 0px;">
+                    <div class="col-xs-12 col-sm-4" style="margin-bottom: 10px; ">
                         <div class="col-xs-12 photo">
                             <img ng-hide="user.PROFILE_PATH" class='img-responsive' src="../test/images/default_user.jpg"/>
                             <img ng-show="user.PROFILE_PATH" class='img-responsive' ng-src="{{user.PROFILE_PATH}}"/>
-                            <input id='img_ul' type="file" name="profile_img" ng-model="changes.img" ng-hide='user.PROFILE_PATH' id="profile_img_upload"/>
+                            <form name="upload_image_form">
+                            	<input id='img_ul' type="file" name="picture"  id="profile_img_upload"/>
+                            	<input class='hidden' name='pType' value='user'></input>
+                            	<input class='hidden' name='un' value='{{user.USERNAME}}'></input>
+                            </form>
                             
-                            <button class="btn btn-primary col-xs-12" id="profile_img_add" ng-hide="user.PROFILE_PATH" ng-click="upload_image('user_image', 'meh');"><i class="icon-edit"></i></button>
-                            <button class="btn btn-danger" id="profile_img_delete" ng-show="user.PROFILE_PATH" ng-click="removeProfileImage();"><i class="icon-remove"></i></button>
+                            
+                            <button class="btn btn-primary col-xs-12" id="profile_img_add"  ng-click="upload_image('user_image', 'meh');"><i class="icon-edit">Submit Image</i></button>
+                            <button class="btn btn-danger" id="profile_img_delete" ng-show="user.PROFILE_PATH" ng-click="checker();"><i class="icon-remove"></i></button>
                         </div>
                     </div>
-                    <div class="col-xs-8" style="margin-bottom: 0px;">
+                    <div class="col-sm-8 col-xs-12" style="margin-bottom: 0px;">
                         <div class="row">
                             <div class="col-xs-12">
                                 <button class="col-xs-12 btn btn-default"><i class="cg-icon-idea"></i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{profile.idea_count}} Ideas</button>
@@ -50,13 +55,13 @@
                 <div class="row">
                 	<h5>Your Topics</h5>
                     <div ng-model='category' ng-show="category.TOPICNAME" class="row category-item" ng-repeat="category in categories track by $index" ng-click="addRemoveCategory(category, 'user_topic_delete')">
-                    		{{category.TOPICNAME}} 
+                    		{{category.TOPICNAME}} <i class="action-remove icon-minus-sign"></i>
                     </div>
                   <hr>
                   <h5>Available Topics</h5>
                     <div class="row category-item"  ng-repeat="category in topics track by $index" ng-show="catArray.indexOf(category.TOPICNAME)==-1" ng-click="addRemoveCategory(category, 'user_topic')" 
                     ng-model="category.TOPICNAME"> 
-                    		{{category.TOPICNAME}} 
+                    		{{category.TOPICNAME}} <i class="action-remove icon-plus-sign"></i>
                     		<!-- <i class="action-remove icon-minus-sign" ng-click="deleteCategory($index)"></i> -->
                     </div>
                     <!-- <div class="row category-item"><input type="text" ng-model="adding_category" placeholder="Add Category"/> <i class="action-add icon-plus-sign" ></i></div> -->
@@ -79,7 +84,7 @@
         <div class="panel panel-default categories">
             <div class="panel-heading">
                 <h4 class="panel-title text-muted">
-                    Location{{user.LOCATION_COUNTRY}}
+                    Location
                 </h4>
             </div>
             <div class="panel-body">

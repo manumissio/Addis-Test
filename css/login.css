@@ -31,7 +31,9 @@ display:none;
 #register-form {
 display:block;
 }*/
-
+.registerModal{
+	height:90%;
+}
 .signup-container button{
         	background-color: #e17a18;
         	color: white;
@@ -66,7 +68,7 @@ display:block;
 			}
 		.signup-container 	#logo-container{
 			  margin: auto;
-			  margin-bottom: -60px;
+	
 			  width:200px;
 			  height:30px;
 			}

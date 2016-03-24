@@ -155,3 +155,12 @@ display:block;
  		/*text-align:center;*/
  		/*background:red;*/
  	}
+ 	
+ 	a{
+ 		cursor:pointer;
+ 	}
+ 	
+ 	.modal {
+  background-color:black;
+  opacity: .7;
+}

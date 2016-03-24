@@ -90,6 +90,9 @@ $hint = "";
 if(isset($_POST['action'])){
 	
 	switch ($_POST['action']){
+		case 'mail':
+			//mailTest();	
+		break;
 		case 'register':
 
 				$valid = un_em_check($un, $em);
@@ -347,7 +350,7 @@ function user_update($SP, $un){
 			preg_match($pw_regex, $_POST['content'], $matches);
 			if($matches){
 				$pw_hash = crypt($_POST['content']);
-				$qy = 'SELECT "SP_updateUserPROFESSION"('.$s_q.$uid.$s_q.','.$s_q.$pw_hash.$s_q.');';
+				$qy = 'SELECT "SP_updateUserPASSWORD"('.$s_q.$uid.$s_q.','.$s_q.$pw_hash.$s_q.');';
 				$result = pg_query($conn, $qy);
 				return 'results from about'.$result;
 			}
@@ -427,9 +430,11 @@ function user_update($SP, $un){
 			}
 			break;
 		case 'img':
-			$qy = 'SELECT "SP_updateUserUserIMG"('.$s_q.$uid.$s_q.','.$s_q.$_POST['content'].$s_q.');';
-			$result = pg_query($conn, $qy);
-			return 'results from user img path '.$result;	
+		
+			$results = pg_update($conn, 'USER', array('PROFILE_PATH'=>null), array('USER_ID'=>$uid));
+			if($results) echo 'true '.$results;
+			else echo 'false'.$results;
+				
 			break;
 		case 'location':
 			/*city, state, country*/
@@ -741,11 +746,18 @@ function idea_update($SP, $un, $idea_title){
 				break;
 				
 			case 'img':
-				$img_path = $_POST['img'];
-				$idea_id = pg_select($conn, 'IDEA', array('TITLE'=>$title));
-				$qy = 'SELECT "SP_updateIdeaIDEA_IMG"('.$s_q.$img_path.$s_q.','.$s_q.$idea_id[0]['IDEA_ID'].$s_q.','.$s_q.$uid.$s_q.');';
-				$result = pg_query($conn, $qy);
-				return 'results from idea img path update'.$result;
+				$results=pg_update($conn, 'IDEA', array('IDEA_IMG_PATH'=>null), array('TITLE'=>$_POST['title']));
+				if($results){
+					echo 'true';
+				}
+				else{
+					echo 'false';
+				}
+				// $img_path = $_POST['img'];
+				// $idea_id = pg_select($conn, 'IDEA', array('TITLE'=>$title));
+				// $qy = 'SELECT "SP_updateIdeaIDEA_IMG"('.$s_q.$img_path.$s_q.','.$s_q.$idea_id[0]['IDEA_ID'].$s_q.','.$s_q.$uid.$s_q.');';
+				// $result = pg_query($conn, $qy);
+				// return 'results from idea img path update'.$result;
 				break;	
 				
 			case 'location':
@@ -886,7 +898,7 @@ function idea_procedure($SP, $un){
 		break;
 		case 'get_comments':
 			$qy='SELECT "TITLE", "USERNAME", "USER_ID", "CONTENT", "IS_COLLAB", "MESSAGE_ID" as "MSG_ID", 
-	       "THREAD_ID", "MESSAGE_TYPE", "CREATED_TIMESTAMP"
+	       "THREAD_ID", "MESSAGE_TYPE", "CREATED_TIMESTAMP", "IMG_PATH"
 	  FROM "IdeaCommentMessagesView"
 	  where "TITLE" ='.$s_q.$_POST['title'].$s_q.'order by "CREATED_TIMESTAMP" desc limit 10 offset '.$_POST['idea_offset'];
 			$results = pg_fetch_all(pg_query($conn, $qy));
@@ -958,6 +970,9 @@ function getIdea(){
 		when ("LOCATION_CITY" is null and "LOCATION_STATE_PROV" is not null) 
 			or ("LOCATION_CITY" is not null and "LOCATION_STATE_PROV" is null) then '.$s_q.', '.$s_q.'||"LOCATION_COUNTRY" 
 		 end end as "LOCATION"
+		 ,"LOCATION_CITY",
+							 "LOCATION_STATE_PROV",
+							 "LOCATION_COUNTRY"
        , "IDEA_IMG_PATH", "LIKES", "VIEWS", "COLLABORATORS", 
        "COMMENTS", "CREATED_TIMESTAMP"
   FROM "IdeaFeedList" 
@@ -1018,5 +1033,140 @@ print_r($_POST);
 	}  
 	 
 }
+function passwordReset(){
+	
+	if($_POST['sp'] == 'reset'){//actually change password. Takes new password, confirmation password and temporary password
+			$newPass = $_POST['newPass'];
+			$confirm = $_POST['confirm'];
+			$tempPass = $_POST['temp'];
+			$conn = dbConn();
+			$u=pg_select($conn,'USER', array('USERNAME'=>$username));
+			$uid=$u[0]['USER_ID'];
+			//check that new and confirm match
+			if($newPass == $confirm){
+				//check if newPassword is valid
+				$pw_regex="/^(?=.{8,}$)[a-zA-Z0-9-_+=?.!]+$/";
+				preg_match($pw_regex, $newPass, $matches);
+				if(!$matches){
+					//check if the temp password is for the user
+					if(crypt($tempPass, $u[0]['TEMP']) == $u[0]['TEMP']){
+					//if yes, change password	
+					$results =pg_update($conn, 'USER', array('PASSWORD'=>$newPass), array('USER_ID'=>$uid));
+					if($results){echo 'true';}
+					else{echo 'false';}
+					}
+					else{
+						echo 'false';//if no, echo false
+					}
+				}
+				else {
+					echo 'false';
+				}
+			}
+			else{
+				echo 'false';
+			}
+			
+			
+			
+	}
+	else {//initialize password approach
+		//given by user. Should be email on file for the user
+		$email_to=$_POST['email'];
+		
+		//checks if email is in system and associated to user
+		if(un_em_check('', $email)){
+			//email user code
+			//generate code
+	  	
+	  	$alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';//list of alphabet letters
+		$num = '0123456789';//list of numeric digits
+	    $pass = array(); //remember to declare $pass as an array
+	    $alphaLength = strlen($alphabet) - 1; //put the length -1 in cache
+	    $numLength = strlen($num); 
+	    
+		//loops to password length long enough and alphanumeric to satisfy password requirements
+	    for ($i = 0; $i < 12; $i++) {
+	        $n = rand(0, $alphaLength);
+	        $pass[$i] = $alphabet[$n];//input alphabet
+			$i++; //incrememnt
+			if($i<12){
+			$n=rand(0, $numLength);
+			
+			$pass[$i]= $num[$n]; //input numeric
+			}	
+	    }
+		//stores the temp password in variable tempPass
+			$tempPass = join($pass);
+		
+	
+			//save code in db
+			$pw_hash = crypt($tempPass); //temporary password's hash to be stored
+			$conn = dbConn();
+			$u=pg_select($conn,'USER', array('USERNAME'=>$username));
+			$uid=$u[0]['USER_ID'];
+			
+			$result=pg_update($conn, 'USER', array('TEMP'=>$pw_hash), array('USER_ID'=>$uid));
+			if($result){//send email
+				$email_res = mail (  
+					//$to
+					$email_to
+					, 
+					//$subject 
+					'Addis Ideas Account Password Reset', 
+					//string $message
+					'You requested a password reset. Your temporary password is "'.$tempPass.'"' 
+					//[, string $additional_headers [, string $additional_parameters ]] 
+					,array('FROM'=>'support@addisideas.org')
+				);
+				
+				if($email_res)
+				{
+					echo 'true';
+				}else{
+					echo 'false';
+				}
+			}
+			else {
+				echo 'false';
+			}
+			
+			//email code
+		}
+		else{
+			echo 'false';
+		}
+	
+	}
+	
+}
 
+function DELETEME_EmailFunction(){
+	
+// Check for empty fields
+if(empty($_POST['name'])  	||
+  empty($_POST['email']) ||
+  empty($_POST['phone']) ||
+  empty($_POST['message'])	||
+  !filter_var($_POST['email'],FILTER_VALIDATE_EMAIL))
+  {
+echo "No arguments Provided!";
+return false;
+  }
+
+$name = $_POST['name'];
+$email_address = $_POST['email'];
+$phone = $_POST['phone'];
+$message = $_POST['message'];
+
+// Create the email and send the message
+$to = 'info@addisideas.org'; // Add your email address inbetween the '' replacing yourname@yourdomain.com - This is where the form will send a message to.
+$email_subject = "Website Contact Form:  $name";
+$email_body = "You have received a new message from your website contact form.\n\n"."Here are the details:\n\nName: $name\n\nEmail: $email_address\n\nPhone: $phone\n\nMessage:\n$message";
+$headers = "From: info@addisideas.org\n"; // This is the email address the generated message will be from. 
+$headers .= "Reply-To: info@addisideas.org";	
+mail($to,$email_subject,$email_body,$headers);
+return true;	
+
+}
 ?>
