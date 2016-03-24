@@ -1,0 +1,45 @@
+{
+    "username": "John",
+    "password": "John",
+    "email": "john@john.com",
+    "firstname": "John",
+    "lastname": "Doe",
+    "dob": "08/08/1979",
+    "profile_img":"http://commonstake.com/default_profile.jpg",
+    "profile_img_exist": true,
+    "profession": "Venture Capitalist",
+    "location_city": "Los Angels",
+    "location_state": "Florida",
+    "location_country": "USA",
+    "like_count": 58,
+    "idea_count": 12,
+    "collaboration_count": 4,
+    "categories": [
+        "Agriculture",
+        "Products"
+    ],
+
+    "ideas": [
+        {
+            "content_img": "http://commonstake.com/default_profile.jpg",
+            "title": "Projects title that says what the idea is about",
+            "location_city": "Los Angels",
+            "location_state": "Florida",
+            "location_country": "USA",
+            "collaborations": 2,
+            "comments": 5,
+            "favourites": 2
+        },
+        {
+            "content_img": "http://commonstake.com/default_profile.jpg",
+            "title": "Projects title that says what the idea is about",
+            "location_city": "Los Angels",
+            "location_state": "Florida",
+            "location_country": "USA",
+            "collaborations": 2,
+            "comments": 5,
+            "favourites": 2
+        } 
+    ],
+    "about": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."
+}
