@@ -52,7 +52,7 @@ $(document).ready(function(){
 		$('#logged-user').text(readCookie('user'));
 		
 	}
-	console.log('cookie ='+readCookie('user'));
+//	console.log('cookie ='+readCookie('user'));
 
     switch (active_page){
     	case 'feed':

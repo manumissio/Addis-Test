@@ -162,14 +162,14 @@ $scope.showNotifications = function(){
 	// }
 	 // }, 10);
 //$scope.$apply(function(){
-	UserService.notifications(readCookie('user'), 4, function(feedback){
+	UserService.notificationsMenu(readCookie('user'), 4, 'false', function(feedback){
 	if(JSON.parse(feedback)){
 		
-		$scope.notifications= JSON.parse(feedback);
-		console.log($scope.notifications, 'notes');
+		$scope.notificationsMenu= JSON.parse(feedback);
+	//	console.log($scope.notificationsMenu, 'notes');
 	}
 	else{
-		$scope.notifications= false;
+		$scope.notificationsMenu={};
 	}
 });
 
@@ -618,6 +618,7 @@ console.log($scope.location);
                 		if(readCookie('user')){
                 			IdeaService.get_comments($scope.idea.TITLE, $scope.idea_offset, readCookie('user'),function(feedback){
 		                	$scope.$apply(function(){
+		                		
 		                			$scope.idea_comments = JSON.parse(feedback);
 		                	});
 		                
@@ -676,20 +677,27 @@ console.log($scope.location);
 	
                 	
 }])
-.controller("notifyCtrl", ["$scope","$routeParams", "UserService", "$http", function($scope,$routeParams, UserService, $http){
+.controller("notifyCtrl", ["$scope","$routeParams", "UserService", "$http", "$location", function($scope,$routeParams, UserService, $http, $location){
 	$scope.user_username = $routeParams.un;
 	$scope.notifications = {};
 	$scope.ncount = 20;
 	$scope.noffset=0;
+	$scope.isPage = 'true'
+	//console.log($location.url);
 	
 	
-	UserService.notifications($scope.user_name, $scope.ncount, function(feedback){
+	
+	UserService.notifications($scope.user_name, $scope.ncount, $scope.isPage, function(feedback){
+		if($location.url().indexOf('notifications'))
+			$scope.isPage='true';
+		else
+			$scope.isPage='false';
 		if(feedback!='false'){
 			$scope.$apply(function(){
-				console.log(feedback);
+			//	console.log(feedback);
 				$scope.notifications = JSON.parse(feedback);
 				$scope.noffset=$scope.notifications.length;
-				console.log($scope.noffset, ' length', $scope.notifications);	
+			//	console.log($scope.noffset, ' length', $scope.notifications);	
 			});
 			
 		}
@@ -697,12 +705,18 @@ console.log($scope.location);
 	$scope.showMore = function(){
 	//	$scope.noffset+=20;
 		//show next 20
+		if($scope.notifications.length < 1){
+			$scope.noffset = 0;
+			
+		}
+		
 		var data={
 			notify_count:$scope.ncount,
 			notify_offset:$scope.noffset,
 			action:'user_procedure',
 			sp:'notify',
-			un:$scope.user_username
+			un:$scope.user_username,
+			isPage:$scope.isPage
 		};
 		$.ajax
 	    ({
@@ -716,8 +730,12 @@ console.log($scope.location);
 	    		{
 	    		//	console.log('noties', JSON.parse(feedback));
 	    			var notes = JSON.parse(feedback);
+	    			
 	    			for(var i in notes){
-	    				$scope.notifications.push(notes[i]);
+	    				if($scope.notifications.length >0)
+	    					$scope.notifications.push(notes[i]);
+	    				else	
+	    					$scope.notifications[i] = notes[i];
 	    				
 	    			}
 	    			$scope.noffset=$scope.notifications.length;
@@ -1277,12 +1295,33 @@ app.factory('LookupService', [function() {
 app.factory('UserService', [function(){
 	return{
 		username:readCookie('user'),
-		notifications:function(username, notify_count, callback){
+		notificationsMenu:function(username, notify_count, isPage, callback){
 			 var data = {
         	action:'user_procedure',
         	sp:'notify',
             un:this.username,
-            notify_count:notify_count
+            notify_count:notify_count,
+            isPage:isPage
+	        };
+			//console.log(data.un);
+	        $.ajax({
+	            type: "POST",
+	            data: data,
+	            url: "app.php"
+	        }).done(function (feedback) {
+	           callback(feedback);
+	    //       console.log(JSON.parse(feedback));
+	           
+	           // document.getElementById("ideaupdate_txtHint").innerHTML = feedback;
+	        });
+		},
+		notifications:function(username, notify_count, isPage, callback){
+			 var data = {
+        	action:'user_procedure',
+        	sp:'notify',
+            un:this.username,
+            notify_count:notify_count,
+            isPage:isPage
 	        };
 			//console.log(data.un);
 	        $.ajax({

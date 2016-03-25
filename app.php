@@ -37,7 +37,7 @@ function dbConn_local(){
 }
 
 function dbConn(){
-	  		$host = 'host=50.87.249.95 ';
+	  		$host = 'host=localhost ';
             $port = 'port=5432 ';
             $dbname = 'dbname=addiside_glory ';
             $user = 'user=addiside_dev ';
@@ -539,12 +539,22 @@ function user_procedure($SP, $un){
 		
 			if(!isset($_POST['notify_offset']))
 			{
-				$qy = 'SELECT "USER_ID", "USERNAME", "SENDER", "NOTIFICATION TYPE", "MSG", "CONTENT", "TIME", "LINK"
-				FROM "UserNotificationsView" 
-				where "USERNAME" ='.$s_q.$_POST['un'].$s_q .' 
-				and "TIME" >  current_date-7 
-				order by "TIME" desc
-				limit '.$_POST['notify_count'];
+				if($_POST['isPage']=='false'){
+					$qy = 'SELECT "USER_ID", "USERNAME", "SENDER", "NOTIFICATION TYPE", "MSG", "CONTENT", "TIME", "LINK"
+					FROM "UserNotificationsView" 
+					where "USERNAME" ='.$s_q.$_POST['un'].$s_q .' 
+					and "TIME" >  current_date-7 
+					order by "TIME" desc
+					limit '.$_POST['notify_count'];
+				}
+				else{
+					$qy = 'SELECT "USER_ID", "USERNAME", "SENDER", "NOTIFICATION TYPE", "MSG", "CONTENT", "TIME", "LINK"
+					FROM "UserNotificationsView" 
+					where "USERNAME" ='.$s_q.$_POST['un'].$s_q .' 
+					order by "TIME" desc
+					limit '.$_POST['notify_count'];
+				}
+			
 				
 			}
 			else{

@@ -63,7 +63,7 @@
                         <!-- data-toggle='modal' data-target='#notAvailableModal'> -->
                         
                         	<span class='glyphicon glyphicon-bell'></span>
-                            <span class='badge'>{{notifications.length}}</span>
+                            <span class='badge'>{{notificationsMenu.length}}</span>
                         
                             
                     </a>
@@ -92,7 +92,7 @@
                         	<a class='col-xs-12' ng-click='showNotifications()' ng-disabled="un==undefined" >
                         <!-- data-toggle='modal' data-target='#notAvailableModal'> -->
                             <span class='glyphicon glyphicon-bell'></span>
-                            <span class='badge'>{{notifications.length}}</span>
+                            <span class='badge'>{{notificationsMenu.length}}</span>
                         </a>
                         <!-- </div> -->
                         
@@ -106,7 +106,7 @@
     
             
          <ul id='notify-box' style="display:none;" class='list-group dropdown-menu pull-right	 notify col-xs-12 col-sm-8' aria-labelledby="notifyDD">                	
-                	<li ng-repeat='n in notifications' class='list-group-item'><a class='' ng-href='{{n.LINK}}'>{{n.MSG}} on {{n.TIME | asDate | date:'medium'}}</a>
+                	<li ng-repeat='n in notificationsMenu' class='list-group-item'><a class='' ng-href='{{n.LINK}}'>{{n.MSG}} on {{n.TIME | asDate | date:'medium'}}</a>
                 	</li>	
                 	<li class='list-group-item text-center'><a  class='addis-link' ng-href='#notifications/{{un}}' >See All</a></li>
             	</ul> 

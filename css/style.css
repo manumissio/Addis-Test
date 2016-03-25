@@ -149,12 +149,14 @@ fieldset[disabled] a.btn {
     display: none; }
 
 #footer {
-  color: #FFFFFF; }
+  /*color: #FFFFFF; */
+  }
 
 #footer {
-  padding-top: 0px;
+  padding-top: 10px;
   padding-bottom: 0px;
-  color: #bdc3c7; }
+  /*color: #bdc3c7; */
+  }
 
 .tabs-icon-top .tab-item {
   line-height: 1em; }
@@ -182,10 +184,12 @@ fieldset[disabled] a.btn {
   padding: 10px 0px; }
 
 #footer a {
-  color: #FFFFFF; }
+  /*color: #FFFFFF; */
+  }
 
 #footer a:hover, #footer a.active, #footer a:visited {
-  color: #DCFF83; }
+  /*color: #DCFF83; */
+  }
 
 #footer .tab-item.round div:before {
   border-top-right-radius: 100%;
@@ -231,7 +235,7 @@ fieldset[disabled] a.btn {
 .padding-bottom-none {
   padding-bottom: 0px; }
 
-.padding-right-none {
+/*.padding-right-none {
   padding: 0px; }
 
 .personal-info .photo {
@@ -246,7 +250,7 @@ fieldset[disabled] a.btn {
 
 .personal-info .photo img {
      max-height:275px;
-  width: 100%; }
+  width: 100%; }*/
 
 .categories .panel-body > div {
   margin: -5px; }
