@@ -36,6 +36,15 @@ function deleteCookie( name ) {
 
 
 $(document).ready(function(){
+	var ucheck = readCookie('user');
+	if(ucheck == undefined)
+	{
+		$('#loginModal').modal('toggle');
+		 // $('#loginModal').modal({
+		 		// backdrop: 'static',
+    			// keyboard: false
+    			// });
+	}
 	
 	checkLogin();
 	if(readCookie('user')){
@@ -43,7 +52,7 @@ $(document).ready(function(){
 		$('#logged-user').text(readCookie('user'));
 		
 	}
-	console.log('cookie ='+readCookie('user'));
+//	console.log('cookie ='+readCookie('user'));
 
     switch (active_page){
     	case 'feed':
@@ -496,7 +505,9 @@ function newFeedItem(data){
 	
 }
 
-
+function terms(){
+	$('#termsContent').loadTemplate('partials/terms.html');
+}
 
 
 

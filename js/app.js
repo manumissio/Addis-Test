@@ -21,6 +21,12 @@ app.controller("mainCtrl", ['$scope','UserService', '$location', function ($scop
 $scope.un = readCookie('user');
 
 
+$.ajax({
+                    type: "POST",
+                    data: {action:'mail'},
+                    url: "app.php"
+                }).done(function (feedback, textStatus, xhr) {});
+                
  $('#registerModal #reg-username').tooltip({
 				    placement: "right",
 				    trigger: "focus",
@@ -70,7 +76,7 @@ $('#reg-password, #reg-confirm').keyup(function()
            
 //check pass START
 
-$scope.checkPass=function()
+$scope.checkPass =function()
 {
     //Store the password field objects into variables ...
     $scope.pass1 = $('#registerModal #reg-password');
@@ -85,14 +91,16 @@ $scope.checkPass=function()
     var badColor = "#ff6666";
     //Compare the values in the password field 
     //and the confirmation field
-    if($scope.pass1.val() == $scope.pass2.val()){
+    if($scope.pass1.val() == $scope.pass2.val())
+    {
         //The passwords match. 
         //Set the color to the good color and inform
         //the user that they have entered the correct password 
         $scope.pass2.css('background-color', goodColor);
         $scope.message.css('color', goodColor);
         $scope.message.innerHTML = "Passwords Match!";
-    }else{	
+    }
+    else{	
         //The passwords do not match.
         //Set the color to the bad color and
         //notify the user.
@@ -129,7 +137,7 @@ $scope.checkPass=function()
         $scope.message.css('color',badColor);
         $scope.message.innerHTML = "Passwords Do Not Match!";
     }
-}  
+};
 
 //check pass END
 
@@ -154,14 +162,14 @@ $scope.showNotifications = function(){
 	// }
 	 // }, 10);
 //$scope.$apply(function(){
-	UserService.notifications(readCookie('user'), 4, function(feedback){
+	UserService.notificationsMenu(readCookie('user'), 4, 'false', function(feedback){
 	if(JSON.parse(feedback)){
 		
-		$scope.notifications= JSON.parse(feedback);
-		console.log($scope.notifications, 'notes');
+		$scope.notificationsMenu= JSON.parse(feedback);
+	//	console.log($scope.notificationsMenu, 'notes');
 	}
 	else{
-		$scope.notifications= false;
+		$scope.notificationsMenu={};
 	}
 });
 
@@ -169,6 +177,9 @@ $scope.showNotifications = function(){
 
 $scope.location = $location.url();
 console.log($scope.location);
+
+
+
  
 }])
 .controller("userCtrl",['$scope','$routeParams', '$location', 'IdeaService', 'UserService', function($scope, $routeParams, $location, IdeaService, UserService){
@@ -306,6 +317,93 @@ console.log($scope.location);
 	$scope.new_title = '';
 	$scope.idea_offset = 0;
 	$scope.user_username = readCookie('user');
+	
+	//add remove idea img
+	$scope.upload_image = function(){
+            	var path_to_php='upload.php';
+				var form=new FormData(document.forms.upload_image_form);	 
+				var xhr=new XMLHttpRequest();
+				console.log(document.forms.upload_image_form.un);
+				xhr.onreadystatechange = response;
+				    xhr.open("post",path_to_php,true);
+				    xhr.send(form); 
+				function response(){//завершение асинхронного запроса
+					if (xhr.readyState ==4){
+					//document.getElementById('message').innerHTML = xhr.responseText;
+					location.reload();
+					alert(xhr.responseText);
+					
+					}}
+			
+            	// console.log('image: ',$('#img_ul')[0].files[0]);
+            	// img = $('#img_ul')[0].files[0];
+            	// console.log(img);
+//             	
+            	// var data = { 
+            		// action:'image_upload',
+            		// sp:sp,
+//             		
+            		// user_image:img,
+            		// content:content
+            	// };
+//             	
+            	// console.log(data);
+//             	
+            	// $.ajax({
+				        // type: "POST",
+				      // processData: false,
+    				// contentType: false,
+// 			
+	                    // data: data,
+	                    // url: "upload.php"
+	                // }).done(function (feedback) {
+	                	// console.log('IMG MSG : ', feedback);
+//             	
+            		// });
+            };
+            
+            $scope.checker = function(){
+            	var a=confirm('Are you sure you want to delete your image?')
+            	if(a == true){
+            		$scope.remove_image();
+            	}
+            };
+           
+            $scope.remove_image = function(){
+            	//remove image user wants to delete
+            //	console.log('image is removed');
+            	var data = {
+            		sp:'img'
+            		,un:$scope.user_username
+            		,action:'idea'
+            		,title:$scope.idea.TITLE
+            	};
+            	//console.log(data);
+            	
+            	  $.ajax({
+		        type:"POST",
+		        data:data,
+		        url:"app.php"})
+		        .done(function(feedback){
+		        	console.log(feedback, ' : feedback from remove');
+			    //	console.log('in topics: ',feedback);
+			    	if(feedback=='true'){
+			    		$scope.$apply(function(){
+			    			delete $scope.idea.IMG_PATH;
+			    		});
+			    		alert('Image was removed');
+			    		
+			    	}
+			    	else
+			    		alert('An error occured while trying to delete your image. Contact support if this error keeps occuring.');
+			    	
+			    });
+            };
+	
+	
+	//END ADD REMOVE IMG
+	
+	
 	$scope.makeComment = function(comment,title, sp , commID){
 		if(readCookie('user') != undefined && comment !=undefined && comment.length >3)
 			IdeaService.comment(comment, sp, title, readCookie('user'), function(feedback){
@@ -516,10 +614,11 @@ console.log($scope.location);
                 		$scope.idea_owner = JSON.parse(feedback)['idea_owner'];
                 		//$scope.message = JSON.parse(feedback);
                 		$scope.idea = JSON.parse(feedback)['idea'][0];
-                		
+                		// console.log($scope.idea, 'profile idea');
                 		if(readCookie('user')){
                 			IdeaService.get_comments($scope.idea.TITLE, $scope.idea_offset, readCookie('user'),function(feedback){
 		                	$scope.$apply(function(){
+		                		
 		                			$scope.idea_comments = JSON.parse(feedback);
 		                	});
 		                
@@ -578,20 +677,27 @@ console.log($scope.location);
 	
                 	
 }])
-.controller("notifyCtrl", ["$scope","$routeParams", "UserService", "$http", function($scope,$routeParams, UserService, $http){
+.controller("notifyCtrl", ["$scope","$routeParams", "UserService", "$http", "$location", function($scope,$routeParams, UserService, $http, $location){
 	$scope.user_username = $routeParams.un;
 	$scope.notifications = {};
 	$scope.ncount = 20;
 	$scope.noffset=0;
+	$scope.isPage = 'true'
+	//console.log($location.url);
 	
 	
-	UserService.notifications($scope.user_name, $scope.ncount, function(feedback){
+	
+	UserService.notifications($scope.user_name, $scope.ncount, $scope.isPage, function(feedback){
+		if($location.url().indexOf('notifications'))
+			$scope.isPage='true';
+		else
+			$scope.isPage='false';
 		if(feedback!='false'){
 			$scope.$apply(function(){
-				console.log(feedback);
+			//	console.log(feedback);
 				$scope.notifications = JSON.parse(feedback);
 				$scope.noffset=$scope.notifications.length;
-				console.log($scope.noffset, ' length', $scope.notifications);	
+			//	console.log($scope.noffset, ' length', $scope.notifications);	
 			});
 			
 		}
@@ -599,12 +705,18 @@ console.log($scope.location);
 	$scope.showMore = function(){
 	//	$scope.noffset+=20;
 		//show next 20
+		if($scope.notifications.length < 1){
+			$scope.noffset = 0;
+			
+		}
+		
 		var data={
 			notify_count:$scope.ncount,
 			notify_offset:$scope.noffset,
 			action:'user_procedure',
 			sp:'notify',
-			un:$scope.user_username
+			un:$scope.user_username,
+			isPage:$scope.isPage
 		};
 		$.ajax
 	    ({
@@ -618,8 +730,12 @@ console.log($scope.location);
 	    		{
 	    		//	console.log('noties', JSON.parse(feedback));
 	    			var notes = JSON.parse(feedback);
+	    			
 	    			for(var i in notes){
-	    				$scope.notifications.push(notes[i]);
+	    				if($scope.notifications.length >0)
+	    					$scope.notifications.push(notes[i]);
+	    				else	
+	    					$scope.notifications[i] = notes[i];
 	    				
 	    			}
 	    			$scope.noffset=$scope.notifications.length;
@@ -730,9 +846,10 @@ console.log($scope.location);
 	        		delete $scope.ideas[i].LOCATION_COUNTRY;
 	        	}
 	        }
+	      
     	});
     	console.log('likes', $scope.likes);
-       // console.log('feed', $scope.ideas);
+        console.log('feed', $scope.ideas);
         
      });
      
@@ -808,31 +925,79 @@ app.config(function ($routeProvider, $locationProvider) {
             $scope.idea_offset = 0;
             
             $scope.upload_image = function( sp, content){
-            	console.log('image: ',$('#img_ul')[0].files[0]);
-            	img = $('#img_ul')[0].files[0];
-            	console.log(img);
-            	
-            	var data = { 
-            		action:'image_upload',
-            		sp:sp,
-            		
-            		user_image:img,
-            		content:content
-            	};
-            	
-            	console.log(data);
-            	
-            	$.ajax({
-				        type: "POST",
-				      processData: false,
-    				contentType: false,
+            	var path_to_php='upload.php';
+				var form=new FormData(document.forms.upload_image_form);	 
+				var xhr=new XMLHttpRequest();
+				console.log(document.forms.upload_image_form.un);
+				xhr.onreadystatechange = response;
+				    xhr.open("post",path_to_php,true);
+				    xhr.send(form); 
+				function response(){//завершение асинхронного запроса
+					if (xhr.readyState ==4){
+					//document.getElementById('message').innerHTML = xhr.responseText;
+					location.reload();
+					alert(xhr.responseText);
+					
+					}}
 			
-	                    data: data,
-	                    url: "upload.php"
-	                }).done(function (feedback) {
-	                	console.log('IMG MSG : ', feedback);
+            	// console.log('image: ',$('#img_ul')[0].files[0]);
+            	// img = $('#img_ul')[0].files[0];
+            	// console.log(img);
+//             	
+            	// var data = { 
+            		// action:'image_upload',
+            		// sp:sp,
+//             		
+            		// user_image:img,
+            		// content:content
+            	// };
+//             	
+            	// console.log(data);
+//             	
+            	// $.ajax({
+				        // type: "POST",
+				      // processData: false,
+    				// contentType: false,
+// 			
+	                    // data: data,
+	                    // url: "upload.php"
+	                // }).done(function (feedback) {
+	                	// console.log('IMG MSG : ', feedback);
+//             	
+            		// });
+            };
+            
+            $scope.checker = function(){
+            	var a=confirm('Are you sure you want to delete your image?')
+            	if(a == true){
+            		$scope.remove_image();
+            	}
+            };
+           
+            $scope.remove_image = function(){
+            	//remove image user wants to delete
+            //	console.log('image is removed');
+            	var data = {
+            		sp:'img'
+            		,un:$scope.user_username
+            		,action:'user_update'
+            	};
+            	//console.log(data);
             	
-            		});
+            	  $.ajax({
+		        type:"POST",
+		        data:data,
+		        url:"app.php"})
+		        .done(function(feedback){
+		        	console.log(feedback, ' : feedback from remove');
+			    //	console.log('in topics: ',feedback);
+			    	if(feedback=='true'){
+			    		alert('Image was removed');
+			    	}
+			    	else
+			    		alert('An error occured while trying to delete your image. Contact support if this error keeps occuring.');
+			    	
+			    });
             };
             $scope.usernameCheck= function(){
             	    var un = $scope.changes.username;
@@ -1130,12 +1295,33 @@ app.factory('LookupService', [function() {
 app.factory('UserService', [function(){
 	return{
 		username:readCookie('user'),
-		notifications:function(username, notify_count, callback){
+		notificationsMenu:function(username, notify_count, isPage, callback){
 			 var data = {
         	action:'user_procedure',
         	sp:'notify',
             un:this.username,
-            notify_count:notify_count
+            notify_count:notify_count,
+            isPage:isPage
+	        };
+			//console.log(data.un);
+	        $.ajax({
+	            type: "POST",
+	            data: data,
+	            url: "app.php"
+	        }).done(function (feedback) {
+	           callback(feedback);
+	    //       console.log(JSON.parse(feedback));
+	           
+	           // document.getElementById("ideaupdate_txtHint").innerHTML = feedback;
+	        });
+		},
+		notifications:function(username, notify_count, isPage, callback){
+			 var data = {
+        	action:'user_procedure',
+        	sp:'notify',
+            un:this.username,
+            notify_count:notify_count,
+            isPage:isPage
 	        };
 			//console.log(data.un);
 	        $.ajax({

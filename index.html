@@ -7,7 +7,7 @@
     
     	<link rel="icon" type="img/ico" href="images/banner_logo.png">
     <title>Addis Ideas</title>
-     <base href="/test/">
+     <base href="/">
     <!-- Latest compiled and minified CSS -->
 
     <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"> -->
@@ -63,7 +63,7 @@
                         <!-- data-toggle='modal' data-target='#notAvailableModal'> -->
                         
                         	<span class='glyphicon glyphicon-bell'></span>
-                            <span class='badge'>{{notifications.length}}</span>
+                            <span class='badge'>{{notificationsMenu.length}}</span>
                         
                             
                     </a>
@@ -92,7 +92,7 @@
                         	<a class='col-xs-12' ng-click='showNotifications()' ng-disabled="un==undefined" >
                         <!-- data-toggle='modal' data-target='#notAvailableModal'> -->
                             <span class='glyphicon glyphicon-bell'></span>
-                            <span class='badge'>{{notifications.length}}</span>
+                            <span class='badge'>{{notificationsMenu.length}}</span>
                         </a>
                         <!-- </div> -->
                         
@@ -106,7 +106,7 @@
     
             
          <ul id='notify-box' style="display:none;" class='list-group dropdown-menu pull-right	 notify col-xs-12 col-sm-8' aria-labelledby="notifyDD">                	
-                	<li ng-repeat='n in notifications' class='list-group-item'><a class='' ng-href='{{n.LINK}}'>{{n.MSG}} on {{n.TIME | asDate | date:'medium'}}</a>
+                	<li ng-repeat='n in notificationsMenu' class='list-group-item'><a class='' ng-href='{{n.LINK}}'>{{n.MSG}} on {{n.TIME | asDate | date:'medium'}}</a>
                 	</li>	
                 	<li class='list-group-item text-center'><a  class='addis-link' ng-href='#notifications/{{un}}' >See All</a></li>
             	</ul> 
@@ -242,10 +242,10 @@
                     </div>
                 </div>
                 
-                <div id="loginModal"  class="modal fade" role="dialog">
+                <div id="loginModal"  class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false" data-opacity=".2">
                     <div class="modal-dialog">
                     	<div class="modal-header">
-                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                               
                                 <h4 class="modal-title">Welcome back!</h4>
                             </div>
                         <div class="modal-content">
@@ -265,7 +265,7 @@
 								          </br>		        
 								          <div class="form-group input-group">
 						
-								            <span class="input-group-addon"><i class="glyphicon glyphicon-envelope"></i></span>
+								            <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
 								            <input id="login-username" class="form-control" name='username' type="text" placeholder="Username"/>     
 								          </div>		        
 								           <div class="form-group input-group">
@@ -278,7 +278,7 @@
 								          <div class="form-group text-center">
 								            <a href="mailto:info@addisideas.org?Subject=I'm%20having%20trouble!">Contact Support</a> </br> <a ng-href="#password_reset">Forgot password?</a>
 								            </br>
-								            <a href="signup.html">Not a member?</a>
+								            <a data-toggle="modal" data-target="#registerModal"  class=" text-center" data-dismiss="modal">Not a member?</a>
 								          </div>
 								        </form>        
 								      </div>  
@@ -286,24 +286,24 @@
 								  </div>
 								</div>	
                         	</div>
-                           <div class='modal-footer '> <button type="button" class="btn-addis-green" data-dismiss="modal">Close</button>!</div>
+                           <div class='modal-footer '> <button ng-show='user_username' type="button" class="btn-addis-green" data-dismiss="modal">Close</button></div>
                         </div>
 						
                     </div>
                 </div>
                 
-                <div id="registerModal" class="modal  modalreg fade" role="dialog">
+                <div id="registerModal" class="modal   fade" role="dialog" data-backdrop="static" data-keyboard="false">
                     <div class="modal-dialog">
 
 
                         <div class="modal-content">
                             <div class="modal-header">
-                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <!-- <button type="button" class="close" data-dismiss="modal">&times;</button> -->
                                 <h4 class="modal-title">Join in the Ideas</h4>
                             </div>
                             <div class="modal-body row">
                                			<header class='container'>
-									    <img src="images/banner_logo.png" class="signup-center">
+									    <img class="signup-center center" src="images/banner_logo.png" >
 									    </header>
 											<div class="container signup-container col-xs-10 col-xs-offset-1">
 											  <div class="row">
@@ -346,7 +346,9 @@
 											          </div>		          
 											          <div class="register">
 											            <label>
-											              By registering, I'm agreeing to the <a data-toggle='modal' data-target='#terms'>Terms and Conditions</a>
+												              By registering, I'm agreeing to the <a class="various" data-fancybox-type="iframe" href="terms_and_conditions.html">Terms and Conditions</a> and <a class="various" data-fancybox-type="iframe" href="community_guidelines.html">Community Guidelines</a>.
+												           
+											              <!-- By registering, I'm agreeing to the <a data-toggle='modal' data-target='#terms'>Terms and Conditions</a> -->
 											            </label>
 											          </div>
 											          <div class="form-group">
@@ -355,6 +357,7 @@
 											          <div class="form-group text-center">
 											            <a href="mailto:info@addisideas.org?Subject=I'm%20having%20trouble!">Support</a>
 											          </div>
+											          <button type="button" class="btn-addis-green" data-dismiss="modal" data-toggle='modal' data-target='#loginModal'>Close</button>
 											        </form>        
 											      </div>  
 											    </div>    
@@ -371,7 +374,7 @@
 									
 									                            </div>
 									                            <div class="modal-footer">
-									                                <button type="button" class="btn-addis-green" data-dismiss="modal">Close</button>
+									                                <button type="button" class="btn-addis-green" data-toggle='modal' data-target='#loginModal' data-dismiss="modal" class="close">Already a member?</button>
 									                            </div>
 									                        </div>
 															
@@ -380,7 +383,7 @@
                             </div>
                             <div class="modal-footer row">
 
-                                <button type="button" class="btn-addis-green" data-dismiss="modal">Close</button>
+                                
                             </div>
                         </div>
 
