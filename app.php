@@ -37,7 +37,7 @@ function dbConn_local(){
 }
 
 function dbConn(){
-	  		$host = 'host=50.87.249.95 ';
+	  		$host = 'host=localhost ';
             $port = 'port=5432 ';
             $dbname = 'dbname=addiside_glory ';
             $user = 'user=addiside_dev ';

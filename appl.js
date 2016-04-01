@@ -38,8 +38,9 @@ function deleteCookie(name) {
 
 $(document).ready(function() {
 	//var ucheck = readCookie('user');
-	if(window.location.pathname == '/test/')
-	{
+	// if(window.location.pathname == '/test/')
+	// {
+	if(!$('#signCheck').val()){
 		if (readCookie('user')) {
 		//	$('#loginModal').modal('toggle');
 		//console.log(window.location.pathname);
@@ -47,11 +48,13 @@ $(document).ready(function() {
 	}
 	else{
 	//	console.log('nawl');
-		
-		window.location.replace("http://localhost/test/login.html");
+		if($('#signCheck').val() != 'signup')
+			window.location.replace("http://addisideas.info/login.html");
+		else
+			window.location.replace("http://addisideas.info/signup.html");
 		
 	}
-	}
+	 }
 	
 
 	checkLogin();
@@ -214,7 +217,7 @@ function registerUser(username, email, password, name, referral) {
 	}).done(function(feedback) {
 		if (feedback == 'true') {
 			console.log('User created, ', feedback);
-			window.location.replace('http://localhost/test');
+			window.location.replace('http://addisideas.info');
 		//	location.reload();
 		} else {
 			console.log('User not created, ', feedback);
@@ -242,7 +245,7 @@ function loginUser(username, password) {
 	}).done(function(feedback) {
 
 		if (feedback) {
-			window.location.replace("http://localhost/test");
+			window.location.replace("http://addisideas.info");
 		//	location.reload();
 		} else {
 			$('#login-error').removeClass('hidden');
