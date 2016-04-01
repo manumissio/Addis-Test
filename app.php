@@ -37,7 +37,7 @@ function dbConn_local(){
 }
 
 function dbConn(){
-	  		$host = 'host=localhost ';
+	  		$host = 'host=50.87.249.95 ';
             $port = 'port=5432 ';
             $dbname = 'dbname=addiside_glory ';
             $user = 'user=addiside_dev ';
@@ -932,7 +932,7 @@ function ideaFeed(){
 	//$results['likes']=array();
 	$query = 'SELECT "TITLE", "DESCRIPTION", 
 	 case when "LOCATION_CITY" is null then ' .$s_q.$s_q. 'else "LOCATION_CITY" end 
-	 ||case when "LOCATION_STATE_PROV" is null then '.$s_q.$s_q.' else case when "LOCATION_CITY" is null then "LOCATION_STATE_PROV" else '.$s_q.', '.$s_q.'||"LOCATION_STATE_PROV"end end 
+	 ||case when "LOCATION_STATE_PROV" is null then '.$s_q.$s_q.' else case when "LOCATION_CITY" is null then "LOCATION_STATE_PROV" else '.$s_q.', '.$s_q.'||"LOCATION_STATE_PROV" end end 
 	 || case when "LOCATION_COUNTRY" is null then '.$s_q.$s_q.' 
 		else case when "LOCATION_CITY" is null and "LOCATION_STATE_PROV" is null then "LOCATION_COUNTRY" 
 		when ("LOCATION_CITY" is null and "LOCATION_STATE_PROV" is not null) 
@@ -943,7 +943,7 @@ function ideaFeed(){
 		 "LOCATION_COUNTRY"
        , "IDEA_IMG_PATH", "LIKES", "VIEWS", "COLLABORATORS", 
        "COMMENTS", "CREATED_TIMESTAMP"
-  FROM "IdeaFeedList" order by "CREATED_TIMESTAMP" desc limit '.$_POST['idea_count'].'offset '.$_POST['idea_offset'].';';
+  FROM "IdeaFeedList" order by "CREATED_TIMESTAMP" desc limit '.$_POST['idea_count'].' offset '.$_POST['idea_offset'].';';
 		$result['ideas']=pg_fetch_all(pg_query($conn, $query));
 		
 		//get liked ideas

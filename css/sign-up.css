@@ -1,0 +1,48 @@
+        .signup-button{
+        	background-color: #e17a18;
+        	color: white;
+        }
+           .form-control:focus {
+        border-color: #458b00;
+        box-shadow: 0px 1px 1px rgba(69, 139, 0, 0.075) inset, 0px 0px 8px rgba(69, 139, 0, 0.5);
+    	}
+    	
+    	p {
+    		text-align: center;
+    		font-weight: bold;
+    	}
+        .signup-center {
+        	padding-top: 3%;
+        	display: block;
+        	margin-left: auto;
+        	margin-right: auto;
+        }
+			div.well{
+			  height: 250px;
+			} 
+			.signup-form-centered {
+			  margin: auto;
+			  position: absolute;
+			  top: 0; left: 0; bottom: 0; right: 0;
+			}
+			.signup-form-centered.responsive {
+			  height: 50%;
+			  min-width: 200px;
+			  max-width: 400px;
+			  padding: 40px;
+			}
+			#logo-container{
+			  margin: auto;
+			  margin-bottom: -60px;
+			  width:200px;
+			  height:30px;
+			}
+			.register{
+			  text-align: center;
+			}
+			.referral {
+				width: 102%;
+			}
+		.instructions{
+			text-align: center;
+		}

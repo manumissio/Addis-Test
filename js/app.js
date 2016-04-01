@@ -19,19 +19,19 @@ function setUs(un){us=un;};
 app.controller("mainCtrl", ['$scope','UserService', '$location', function ($scope, UserService,$location) {
 
 $scope.un = readCookie('user');
+console.log(window.location.pathname);
 
-
-$.ajax({
-                    type: "POST",
-                    data: {action:'mail'},
-                    url: "app.php"
-                }).done(function (feedback, textStatus, xhr) {});
-                
- $('#registerModal #reg-username').tooltip({
-				    placement: "right",
-				    trigger: "focus",
-				    contents: $scope.unMsg
-			});	
+// $.ajax({
+                    // type: "POST",
+                    // data: {action:'mail'},
+                    // url: "app.php"
+                // }).done(function (feedback, textStatus, xhr) {});
+//                 
+ // $('#registerModal #reg-username').tooltip({
+				    // placement: "right",
+				    // trigger: "focus",
+				    // contents: $scope.unMsg
+			// });	
 //check username
 $('#registerModal #reg-username').keyup(function(){
    		var un = $(this).val();
@@ -192,6 +192,30 @@ console.log($scope.location);
 			// $('#banner').css('display','none');
 		// }
 		
+		$scope.showMoreIdeas = function(){
+			$scope.idea_offset=$scope.ideas.length;
+			
+    		UserService.updateIdeaList($scope.user_username, $scope.idea_count, $scope.idea_offset,function(feedback){
+    				console.log(feedback);
+    			if(JSON.parse(feedback))
+    			{
+    		
+    				 $scope.profile = JSON.parse(feedback);
+            	 	$scope.$apply(function(){
+
+            		var ideas = $scope.profile['ideas'];
+            		
+            		for(var i in ideas){
+	    				$scope.ideas.push(ideas[i]);
+	    				
+	    			}
+	    			$scope.idea_offset=$scope.ideas.length;
+            	  });
+    			}
+    			
+    		});
+    };   
+		
 //	});
 	if($routeParams.un != undefined){
 		var data = {
@@ -233,27 +257,7 @@ console.log($scope.location);
                 });
 	}
 	
-    $scope.showMoreIdeas = function(){
-    		UserService.updateIdeaList($scope.user_username, $scope.idea_count, $scope.idea_offset,function(feedback){
-    				console.log(feedback);
-    			if(JSON.parse(feedback)){
-    			
-    				 $scope.profile = JSON.parse(feedback);
-            	 	$scope.$apply(function(){
 
-            		var ideas = $scope.profile['ideas'];
-            		
-            		for(var i in ideas){
-	    				$scope.ideas.push(ideas[i]);
-	    				
-	    			}
-	    			$scope.idea_offset=$scope.ideas.length;
-            	  });
-    			}
-    			
-    		});
-    };        
-	
 	//console.log('test: '+data);
 	//$scope.user = data['user'];
 	
@@ -268,7 +272,7 @@ console.log($scope.location);
 						if($scope.likes == undefined) $scope.likes = [];
 						$scope.likes.push(idea);
 						console.log($scope.likes);
-						for( var id in $scope.ideas){
+						for(var id in $scope.ideas){
 							if($scope.ideas[id].TITLE == idea){
 								console.log($scope.ideas[id].LIKES);
 								$scope.ideas[id].LIKES=Number($scope.ideas[id].LIKES)+1;
@@ -308,7 +312,7 @@ console.log($scope.location);
 		//console.log(idea, user);	
 	};
 	//End Like
-
+	  
 	
 	
 	
@@ -747,11 +751,73 @@ console.log($scope.location);
 	
 	};
 }])
-.controller("feedCtrl",["$scope", "$http", "IdeaService", function($scope, $http, IdeaService){
+.controller("feedCtrl",["$scope", "$http", "IdeaService", "UserService", function($scope, $http, IdeaService, UserService){
 	$scope.user_username = readCookie('user');
 	$scope.idea_count = 10;
 	$scope.idea_offset=0;
-	var feedSort = 'date';
+	$scope.updating = false;
+	var feedSort = 'date';     
+	
+	window.onscroll = function(ev) {
+	    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
+	        // you're at the bottom of the page
+	       
+	       if($scope.updating != true){
+	       	$scope.$apply(function(){
+	       			$scope.updating = true;
+	       	});
+	       
+	       	
+	       		if($scope.idea_offset==0 || $scope.idea_offset%$scope.idea_count == 0 )
+	       		{
+	       			console.log('bottom scroll', $scope.idea_offset);
+	        		$scope.showMoreIdeas();
+	       		}
+	       
+	        	$scope.updating = false;
+	       }
+	        
+	    }
+	};
+	
+	$scope.showMoreIdeas = function(){
+			$scope.idea_offset=$scope.ideas.length;
+    		IdeaService.updateIdeaList($scope.user_username, $scope.idea_count, $scope.idea_offset,function(feedback){
+    		//		console.log(feedback);
+    		console.log($scope.idea_offset, 'offset');
+    			if(JSON.parse(feedback))
+    			{
+    		
+    				 $scope.profile = JSON.parse(feedback);
+    				
+            	 	$scope.$apply(function(){
+
+            		var ideas = $scope.profile['ideas'];
+            		var likes = $scope.profile['likes'];
+            		
+            		for(var i in ideas){
+            			if(ideas[i].TITLE)
+            				{
+            					
+            					$scope.ideas.push(ideas[i]);
+            				}
+	    					
+	    			}
+	    			
+	    			for(l in likes)
+					{
+						console.log(likes[l]);
+						if($scope.likes == undefined) $scope.likes = [];
+						$scope.likes.push(likes[l]);
+					}	    			
+					
+					console.log('pushed', $scope.ideas);
+	    			$scope.idea_offset=$scope.ideas.length;
+            	  });
+    			}
+    			
+    		});
+    }; 
 	
 	$scope.likeIdea = function(sp,idea, user){
 		IdeaService.likeIdea(sp, idea, user, function(feedback){
@@ -1440,6 +1506,28 @@ app.factory('IdeaService', [function() {
 	
 	
 	return {
+		  updateIdeaList:function(un,ic, io, callback){
+    	
+    	var data = {
+				action:'feed',
+				un:un,
+				idea_count:ic,
+				idea_offset:io
+			};
+			
+	
+
+	
+	
+		$.ajax({
+				        type: "POST",
+	                    data: data,
+	                    url: "app.php"
+	                }).done(function (feedback) {
+	                	callback(feedback);
+	                	
+	                	});
+   },
 		//
 		likeIdea:function(sp, title, un, callback){
 					var data = {
@@ -1693,5 +1781,7 @@ app.directive('register-view', function() {
     	template:'partials/login.html'
   	};
   });
+  
+  
 //END DIRECTIVES
   
