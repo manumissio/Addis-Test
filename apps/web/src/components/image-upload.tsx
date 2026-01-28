@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, type ChangeEvent } from "react";
+import { useState, useRef, useEffect, type ChangeEvent } from "react";
 import { ApiError } from "@/lib/api";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
@@ -25,6 +25,13 @@ export function ImageUpload({
   const [preview, setPreview] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Revoke object URL on cleanup or when preview changes
+  useEffect(() => {
+    return () => {
+      if (preview) URL.revokeObjectURL(preview);
+    };
+  }, [preview]);
+
   async function handleChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -41,7 +48,9 @@ export function ImageUpload({
       return;
     }
 
-    // Show preview immediately
+    // Revoke previous preview before creating a new one
+    if (preview) URL.revokeObjectURL(preview);
+
     const objectUrl = URL.createObjectURL(file);
     setPreview(objectUrl);
 

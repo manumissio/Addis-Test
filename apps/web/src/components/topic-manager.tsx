@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { api } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
 
 type TopicManagerProps = {
   topics: string[];
@@ -9,6 +9,10 @@ type TopicManagerProps = {
   deleteEndpoint: (topicName: string) => string;
   onUpdate: () => void;
   editable?: boolean;
+  bodyKey?: string;
+  placeholder?: string;
+  emptyMessage?: string;
+  tagClassName?: string;
 };
 
 export function TopicManager({
@@ -17,6 +21,10 @@ export function TopicManager({
   deleteEndpoint,
   onUpdate,
   editable = false,
+  bodyKey = "topicName",
+  placeholder = "Add topic",
+  emptyMessage = "No topics yet",
+  tagClassName = "bg-gray-100 text-gray-700",
 }: TopicManagerProps) {
   const [newTopic, setNewTopic] = useState("");
   const [adding, setAdding] = useState(false);
@@ -36,12 +44,12 @@ export function TopicManager({
     try {
       await api(addEndpoint, {
         method: "POST",
-        body: { topicName: trimmed },
+        body: { [bodyKey]: trimmed },
       });
       setNewTopic("");
       onUpdate();
-    } catch {
-      setError("Failed to add topic");
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to add topic");
     } finally {
       setAdding(false);
     }
@@ -51,8 +59,8 @@ export function TopicManager({
     try {
       await api(deleteEndpoint(topicName), { method: "DELETE" });
       onUpdate();
-    } catch {
-      setError("Failed to remove topic");
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to remove topic");
     }
   }
 
@@ -60,12 +68,12 @@ export function TopicManager({
     <div className="space-y-2">
       <div className="flex flex-wrap gap-2">
         {topics.length === 0 && (
-          <p className="text-xs text-gray-400">No topics yet</p>
+          <p className="text-xs text-gray-400">{emptyMessage}</p>
         )}
         {topics.map((topic) => (
           <span
             key={topic}
-            className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-700"
+            className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs ${tagClassName}`}
           >
             {topic}
             {editable && (
@@ -86,7 +94,7 @@ export function TopicManager({
             type="text"
             value={newTopic}
             onChange={(e) => setNewTopic(e.target.value)}
-            placeholder="Add topic"
+            placeholder={placeholder}
             maxLength={255}
             className="w-40 rounded-md border border-gray-300 px-2 py-1 text-xs focus:border-addis-orange focus:outline-none focus:ring-1 focus:ring-addis-orange"
           />
