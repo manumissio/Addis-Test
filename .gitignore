@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.next/
+.turbo/
+.env
+.env.local
+*.zip
+tmp/
+.DS_Store
+.idea/
+.vscode/
+*.log
+user_images/*
+!user_images/.gitkeep
+idea_images/*
+!idea_images/.gitkeep
