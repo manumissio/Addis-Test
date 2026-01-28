@@ -34,6 +34,14 @@ type Comment = {
   profileImageUrl: string | null;
 };
 
+type Collaborator = {
+  userId: number;
+  isAdmin: boolean;
+  joinedAt: string;
+  username: string;
+  profileImageUrl: string | null;
+};
+
 export default function IdeaDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -44,7 +52,9 @@ export default function IdeaDetailPage() {
   const [topics, setTopics] = useState<string[]>([]);
   const [addressedTo, setAddressedTo] = useState<string[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
+  const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
   const [liked, setLiked] = useState(false);
+  const [collaborating, setCollaborating] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -59,19 +69,25 @@ export default function IdeaDetailPage() {
 
   const loadIdea = useCallback(async () => {
     try {
-      const [ideaData, commentsData] = await Promise.all([
+      const [ideaData, commentsData, collabData] = await Promise.all([
         api<{
           idea: IdeaDetail;
           topics: { topicName: string }[];
           addressedTo: { stakeholder: string }[];
+          isLiked: boolean;
+          isCollaborating: boolean;
         }>(`/api/ideas/${ideaId}`),
         api<{ comments: Comment[] }>(`/api/ideas/${ideaId}/comments?limit=50&offset=0`),
+        api<{ collaborators: Collaborator[] }>(`/api/ideas/${ideaId}/collaborators`),
       ]);
 
       setIdea(ideaData.idea);
       setTopics(ideaData.topics.map((t) => t.topicName));
       setAddressedTo(ideaData.addressedTo.map((a) => a.stakeholder));
+      setLiked(ideaData.isLiked);
+      setCollaborating(ideaData.isCollaborating);
       setComments(commentsData.comments);
+      setCollaborators(collabData.collaborators);
     } catch {
       setError("Failed to load idea");
     } finally {
@@ -79,23 +95,9 @@ export default function IdeaDetailPage() {
     }
   }, [ideaId]);
 
-  // Check if user has liked this idea
-  const checkLiked = useCallback(async () => {
-    if (!user) return;
-    try {
-      const data = await api<{ ideas: unknown[]; likedIdeaIds: number[] }>(
-        `/api/ideas?limit=1&offset=0`
-      );
-      setLiked(data.likedIdeaIds.includes(Number(ideaId)));
-    } catch {
-      // Non-critical
-    }
-  }, [user, ideaId]);
-
   useEffect(() => {
     loadIdea();
-    checkLiked();
-  }, [loadIdea, checkLiked]);
+  }, [loadIdea]);
 
   async function handleLike() {
     try {
@@ -114,8 +116,43 @@ export default function IdeaDetailPage() {
       }
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
-        // Already in desired state — toggle local state
         setLiked(!liked);
+      }
+    }
+  }
+
+  async function handleCollaborate() {
+    try {
+      if (collaborating) {
+        await api(`/api/ideas/${ideaId}/collaborate`, { method: "DELETE" });
+        setCollaborating(false);
+        setIdea((prev) =>
+          prev ? { ...prev, collaboratorsCount: Math.max(0, prev.collaboratorsCount - 1) } : prev
+        );
+        setCollaborators((prev) => prev.filter((c) => c.userId !== user?.id));
+      } else {
+        await api(`/api/ideas/${ideaId}/collaborate`, { method: "POST" });
+        setCollaborating(true);
+        setIdea((prev) =>
+          prev ? { ...prev, collaboratorsCount: prev.collaboratorsCount + 1 } : prev
+        );
+        // Add current user to local collaborators list
+        if (user) {
+          setCollaborators((prev) => [
+            ...prev,
+            {
+              userId: user.id,
+              isAdmin: false,
+              joinedAt: new Date().toISOString(),
+              username: user.username,
+              profileImageUrl: null,
+            },
+          ]);
+        }
+      }
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 409) {
+        setCollaborating(true);
       }
     }
   }
@@ -133,7 +170,6 @@ export default function IdeaDetailPage() {
         body: { content: trimmed },
       });
       setCommentText("");
-      // Reload comments
       const data = await api<{ comments: Comment[] }>(
         `/api/ideas/${ideaId}/comments?limit=50&offset=0`
       );
@@ -276,12 +312,13 @@ export default function IdeaDetailPage() {
       {topics.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {topics.map((topic) => (
-            <span
+            <Link
               key={topic}
-              className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600"
+              href={`/discover?topic=${encodeURIComponent(topic)}`}
+              className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600 hover:bg-gray-200"
             >
               {topic}
-            </span>
+            </Link>
           ))}
         </div>
       )}
@@ -304,7 +341,7 @@ export default function IdeaDetailPage() {
       )}
 
       {/* Stats + actions bar */}
-      <div className="flex items-center gap-5 border-y py-3">
+      <div className="flex flex-wrap items-center gap-4 border-y py-3">
         <button
           onClick={handleLike}
           className={`flex items-center gap-1.5 text-sm ${
@@ -328,6 +365,33 @@ export default function IdeaDetailPage() {
           </svg>
           {idea.likesCount} {idea.likesCount === 1 ? "like" : "likes"}
         </button>
+
+        {!isOwner && (
+          <button
+            onClick={handleCollaborate}
+            className={`flex items-center gap-1.5 text-sm ${
+              collaborating
+                ? "font-medium text-addis-green"
+                : "text-gray-500 hover:text-addis-green"
+            }`}
+          >
+            <svg
+              className="h-5 w-5"
+              fill={collaborating ? "currentColor" : "none"}
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+            </svg>
+            {collaborating ? "Leave" : "Collaborate"}
+          </button>
+        )}
+
         <span className="flex items-center gap-1.5 text-sm text-gray-500">
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path
@@ -343,17 +407,45 @@ export default function IdeaDetailPage() {
           </svg>
           {idea.viewsCount} views
         </span>
-        <span className="flex items-center gap-1.5 text-sm text-gray-500">
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
-            />
-          </svg>
-          {idea.collaboratorsCount} collaborators
-        </span>
       </div>
+
+      {/* Collaborators section */}
+      {collaborators.length > 0 && (
+        <section>
+          <h2 className="mb-3 text-sm font-semibold text-gray-700">
+            Collaborators ({idea.collaboratorsCount})
+          </h2>
+          <div className="flex flex-wrap gap-3">
+            {collaborators.map((collab) => (
+              <Link
+                key={collab.userId}
+                href={`/profile/${collab.username}`}
+                className="flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm hover:bg-gray-50"
+              >
+                <div className="h-6 w-6 shrink-0 overflow-hidden rounded-full bg-gray-200">
+                  {collab.profileImageUrl ? (
+                    <img
+                      src={`${API_URL}${collab.profileImageUrl}`}
+                      alt={collab.username}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-[10px] font-bold text-gray-400">
+                      {collab.username[0].toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                <span className="text-gray-700">{collab.username}</span>
+                {collab.isAdmin && (
+                  <span className="rounded bg-addis-orange/10 px-1.5 py-0.5 text-[10px] font-medium text-addis-orange">
+                    Creator
+                  </span>
+                )}
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Comments section */}
       <section>

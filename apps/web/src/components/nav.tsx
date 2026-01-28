@@ -22,6 +22,9 @@ export function Nav() {
           <Link href="/feed" className="text-gray-600 hover:text-gray-900">
             Feed
           </Link>
+          <Link href="/discover" className="text-gray-600 hover:text-gray-900">
+            Discover
+          </Link>
           <Link
             href={`/profile/${user.username}`}
             className="text-gray-600 hover:text-gray-900"
@@ -71,6 +74,13 @@ export function Nav() {
               className="text-gray-600 hover:text-gray-900"
             >
               Feed
+            </Link>
+            <Link
+              href="/discover"
+              onClick={() => setMenuOpen(false)}
+              className="text-gray-600 hover:text-gray-900"
+            >
+              Discover
             </Link>
             <Link
               href="/ideas/new"
