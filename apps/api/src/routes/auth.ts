@@ -188,8 +188,10 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       .set({ tempPasswordHash: tempHash })
       .where(eq(users.id, result[0].id));
 
-    // In production, send email here. Log for development.
-    app.log.info({ email, tempPassword }, "Password reset requested");
+    // TODO: Send email with tempPassword in production.
+    if (process.env.NODE_ENV !== "production") {
+      app.log.info({ email, tempPassword }, "Password reset requested (dev only)");
+    }
 
     return { success: true };
   });

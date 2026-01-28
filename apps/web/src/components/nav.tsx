@@ -28,12 +28,18 @@ export function Nav() {
           >
             Profile
           </Link>
+          <Link
+            href="/ideas/new"
+            className="rounded-md bg-addis-orange px-3 py-1.5 text-white hover:bg-addis-orange/90"
+          >
+            New Idea
+          </Link>
           <span className="text-gray-400">
             {user.username}
           </span>
           <button
             onClick={logout}
-            className="rounded-md bg-addis-orange px-3 py-1.5 text-white hover:bg-addis-orange/90"
+            className="rounded-md border border-gray-300 px-3 py-1.5 text-gray-600 hover:bg-gray-50"
           >
             Logout
           </button>
@@ -65,6 +71,13 @@ export function Nav() {
               className="text-gray-600 hover:text-gray-900"
             >
               Feed
+            </Link>
+            <Link
+              href="/ideas/new"
+              onClick={() => setMenuOpen(false)}
+              className="text-gray-600 hover:text-gray-900"
+            >
+              New Idea
             </Link>
             <Link
               href={`/profile/${user.username}`}

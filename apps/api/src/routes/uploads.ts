@@ -2,7 +2,7 @@ import type { FastifyPluginAsync } from "fastify";
 import { eq } from "drizzle-orm";
 import { randomBytes } from "node:crypto";
 import { mkdir, writeFile, unlink } from "node:fs/promises";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { users, ideas } from "@addis/db";
 import { requireAuth } from "../plugins/auth.js";
 
@@ -24,6 +24,18 @@ function detectImageType(buffer: Buffer): string | null {
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const UPLOAD_DIR = join(process.cwd(), "uploads");
+
+/** Resolve a stored image URL to a safe filesystem path, rejecting traversal attempts. */
+function safeUploadPath(storedUrl: string): string | null {
+  const resolved = resolve(process.cwd(), storedUrl.replace(/^\//, ""));
+  if (!resolved.startsWith(UPLOAD_DIR)) return null;
+  return resolved;
+}
+
+async function safeDeleteFile(storedUrl: string): Promise<void> {
+  const safePath = safeUploadPath(storedUrl);
+  if (safePath) await unlink(safePath).catch(() => {});
+}
 
 export const uploadsRoutes: FastifyPluginAsync = async (app) => {
   // Rate limit uploads more aggressively
@@ -73,8 +85,7 @@ export const uploadsRoutes: FastifyPluginAsync = async (app) => {
         .limit(1);
 
       if (current[0]?.profileImageUrl) {
-        const oldPath = join(process.cwd(), current[0].profileImageUrl);
-        await unlink(oldPath).catch(() => {});
+        await safeDeleteFile(current[0].profileImageUrl);
       }
 
       await app.db
@@ -137,8 +148,7 @@ export const uploadsRoutes: FastifyPluginAsync = async (app) => {
 
       // Delete old image
       if (idea[0].imageUrl) {
-        const oldPath = join(process.cwd(), idea[0].imageUrl);
-        await unlink(oldPath).catch(() => {});
+        await safeDeleteFile(idea[0].imageUrl);
       }
 
       await app.db
@@ -162,8 +172,7 @@ export const uploadsRoutes: FastifyPluginAsync = async (app) => {
         .limit(1);
 
       if (current[0]?.profileImageUrl) {
-        const oldPath = join(process.cwd(), current[0].profileImageUrl);
-        await unlink(oldPath).catch(() => {});
+        await safeDeleteFile(current[0].profileImageUrl);
       }
 
       await app.db

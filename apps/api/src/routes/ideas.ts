@@ -1,5 +1,5 @@
 import type { FastifyPluginAsync } from "fastify";
-import { eq, sql, and } from "drizzle-orm";
+import { eq, sql, and, desc } from "drizzle-orm";
 import {
   ideas,
   ideaLikes,
@@ -38,7 +38,7 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
       })
       .from(ideas)
       .innerJoin(users, eq(ideas.creatorId, users.id))
-      .orderBy(sql`${ideas.createdAt} desc`)
+      .orderBy(desc(ideas.createdAt))
       .limit(pagination.limit)
       .offset(pagination.offset);
 
@@ -178,6 +178,35 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
       }
 
       await app.db.update(ideas).set(parsed.data).where(eq(ideas.id, ideaId));
+      return { success: true };
+    }
+  );
+
+  // DELETE /api/ideas/:id
+  app.delete<{ Params: { id: string } }>(
+    "/:id",
+    { preHandler: [requireAuth] },
+    async (request, reply) => {
+      const ideaId = parseInt(request.params.id, 10);
+      if (isNaN(ideaId)) {
+        return reply.status(400).send({ error: "Invalid idea ID" });
+      }
+
+      const idea = await app.db
+        .select({ creatorId: ideas.creatorId })
+        .from(ideas)
+        .where(eq(ideas.id, ideaId))
+        .limit(1);
+
+      if (idea.length === 0) {
+        return reply.status(404).send({ error: "Idea not found" });
+      }
+      if (idea[0].creatorId !== request.userId) {
+        return reply.status(403).send({ error: "Not authorized to delete this idea" });
+      }
+
+      // Cascade deletes handle related records (likes, topics, etc.)
+      await app.db.delete(ideas).where(eq(ideas.id, ideaId));
       return { success: true };
     }
   );
@@ -322,7 +351,7 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
         .from(messages)
         .innerJoin(users, eq(messages.userId, users.id))
         .where(eq(messages.threadId, thread[0].id))
-        .orderBy(sql`${messages.createdAt} desc`)
+        .orderBy(desc(messages.createdAt))
         .limit(pagination.limit)
         .offset(pagination.offset);
 
@@ -381,19 +410,64 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
       const ideaId = parseInt(request.params.id, 10);
       if (isNaN(ideaId)) return reply.status(400).send({ error: "Invalid idea ID" });
 
+      // Verify ownership
+      const idea = await app.db
+        .select({ creatorId: ideas.creatorId })
+        .from(ideas)
+        .where(eq(ideas.id, ideaId))
+        .limit(1);
+
+      if (idea.length === 0) return reply.status(404).send({ error: "Idea not found" });
+      if (idea[0].creatorId !== request.userId) {
+        return reply.status(403).send({ error: "Not authorized" });
+      }
+
       const { topicName } = request.body as { topicName: string };
+      if (!topicName || typeof topicName !== "string" || topicName.trim().length === 0) {
+        return reply.status(400).send({ error: "Topic name is required" });
+      }
+      const trimmed = topicName.trim().slice(0, 255);
 
       const existing = await app.db
         .select({ id: ideaTopics.id })
         .from(ideaTopics)
-        .where(and(eq(ideaTopics.ideaId, ideaId), eq(ideaTopics.topicName, topicName)))
+        .where(and(eq(ideaTopics.ideaId, ideaId), eq(ideaTopics.topicName, trimmed)))
         .limit(1);
 
       if (existing.length > 0) {
         return reply.status(409).send({ error: "Topic already added" });
       }
 
-      await app.db.insert(ideaTopics).values({ ideaId, topicName });
+      await app.db.insert(ideaTopics).values({ ideaId, topicName: trimmed });
+      return { success: true };
+    }
+  );
+
+  // DELETE /api/ideas/:id/topics/:topicName
+  app.delete<{ Params: { id: string; topicName: string } }>(
+    "/:id/topics/:topicName",
+    { preHandler: [requireAuth] },
+    async (request, reply) => {
+      const ideaId = parseInt(request.params.id, 10);
+      if (isNaN(ideaId)) return reply.status(400).send({ error: "Invalid idea ID" });
+
+      // Verify ownership
+      const idea = await app.db
+        .select({ creatorId: ideas.creatorId })
+        .from(ideas)
+        .where(eq(ideas.id, ideaId))
+        .limit(1);
+
+      if (idea.length === 0) return reply.status(404).send({ error: "Idea not found" });
+      if (idea[0].creatorId !== request.userId) {
+        return reply.status(403).send({ error: "Not authorized" });
+      }
+
+      const topicName = decodeURIComponent(request.params.topicName);
+      await app.db
+        .delete(ideaTopics)
+        .where(and(eq(ideaTopics.ideaId, ideaId), eq(ideaTopics.topicName, topicName)));
+
       return { success: true };
     }
   );
@@ -406,13 +480,29 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
       const ideaId = parseInt(request.params.id, 10);
       if (isNaN(ideaId)) return reply.status(400).send({ error: "Invalid idea ID" });
 
+      // Verify ownership
+      const idea = await app.db
+        .select({ creatorId: ideas.creatorId })
+        .from(ideas)
+        .where(eq(ideas.id, ideaId))
+        .limit(1);
+
+      if (idea.length === 0) return reply.status(404).send({ error: "Idea not found" });
+      if (idea[0].creatorId !== request.userId) {
+        return reply.status(403).send({ error: "Not authorized" });
+      }
+
       const { stakeholder } = request.body as { stakeholder: string };
+      if (!stakeholder || typeof stakeholder !== "string" || stakeholder.trim().length === 0) {
+        return reply.status(400).send({ error: "Stakeholder is required" });
+      }
+      const trimmed = stakeholder.trim().slice(0, 255);
 
       const existing = await app.db
         .select({ id: ideaAddressedTo.id })
         .from(ideaAddressedTo)
         .where(
-          and(eq(ideaAddressedTo.ideaId, ideaId), eq(ideaAddressedTo.stakeholder, stakeholder))
+          and(eq(ideaAddressedTo.ideaId, ideaId), eq(ideaAddressedTo.stakeholder, trimmed))
         )
         .limit(1);
 
@@ -420,7 +510,38 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
         return reply.status(409).send({ error: "Stakeholder already added" });
       }
 
-      await app.db.insert(ideaAddressedTo).values({ ideaId, stakeholder });
+      await app.db.insert(ideaAddressedTo).values({ ideaId, stakeholder: trimmed });
+      return { success: true };
+    }
+  );
+
+  // DELETE /api/ideas/:id/addressed-to/:stakeholder
+  app.delete<{ Params: { id: string; stakeholder: string } }>(
+    "/:id/addressed-to/:stakeholder",
+    { preHandler: [requireAuth] },
+    async (request, reply) => {
+      const ideaId = parseInt(request.params.id, 10);
+      if (isNaN(ideaId)) return reply.status(400).send({ error: "Invalid idea ID" });
+
+      // Verify ownership
+      const idea = await app.db
+        .select({ creatorId: ideas.creatorId })
+        .from(ideas)
+        .where(eq(ideas.id, ideaId))
+        .limit(1);
+
+      if (idea.length === 0) return reply.status(404).send({ error: "Idea not found" });
+      if (idea[0].creatorId !== request.userId) {
+        return reply.status(403).send({ error: "Not authorized" });
+      }
+
+      const stakeholder = decodeURIComponent(request.params.stakeholder);
+      await app.db
+        .delete(ideaAddressedTo)
+        .where(
+          and(eq(ideaAddressedTo.ideaId, ideaId), eq(ideaAddressedTo.stakeholder, stakeholder))
+        );
+
       return { success: true };
     }
   );
