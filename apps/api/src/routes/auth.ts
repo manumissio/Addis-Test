@@ -97,7 +97,13 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       expires: expiresAt,
     });
 
-    return { user: { id: newUser.id, username: newUser.username } };
+    return {
+      user: {
+        id: newUser.id,
+        username: newUser.username,
+        profileImageUrl: null, // New users have no profile image
+      },
+    };
   });
 
   // POST /api/auth/login
@@ -113,6 +119,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
         id: users.id,
         username: users.username,
         passwordHash: users.passwordHash,
+        profileImageUrl: users.profileImageUrl,
       })
       .from(users)
       .where(eq(users.username, username))
@@ -150,7 +157,13 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       expires: expiresAt,
     });
 
-    return { user: { id: user.id, username: user.username } };
+    return {
+      user: {
+        id: user.id,
+        username: user.username,
+        profileImageUrl: user.profileImageUrl,
+      },
+    };
   });
 
   // POST /api/auth/logout
