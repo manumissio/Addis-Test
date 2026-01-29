@@ -240,17 +240,11 @@ export default function IdeaDetailPage() {
           className="flex items-center gap-3"
         >
           <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-gray-200">
-            {idea.creatorImageUrl ? (
-              <img
-                src={`${API_URL}${idea.creatorImageUrl}`}
-                alt={idea.creatorUsername}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-sm font-bold text-gray-400">
-                {idea.creatorUsername[0].toUpperCase()}
-              </div>
-            )}
+            <img
+              src={idea.creatorImageUrl ? `${API_URL}${idea.creatorImageUrl}` : "/images/default_user.jpg"}
+              alt={idea.creatorUsername}
+              className="h-full w-full object-cover"
+            />
           </div>
           <div>
             <span className="text-sm font-medium text-gray-700 hover:text-addis-orange">
@@ -439,17 +433,11 @@ export default function IdeaDetailPage() {
                 className="flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm hover:bg-gray-50"
               >
                 <div className="h-6 w-6 shrink-0 overflow-hidden rounded-full bg-gray-200">
-                  {collab.profileImageUrl ? (
-                    <img
-                      src={`${API_URL}${collab.profileImageUrl}`}
-                      alt={collab.username}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-[10px] font-bold text-gray-400">
-                      {collab.username[0].toUpperCase()}
-                    </div>
-                  )}
+                  <img
+                    src={collab.profileImageUrl ? `${API_URL}${collab.profileImageUrl}` : "/images/default_user.jpg"}
+                    alt={collab.username}
+                    className="h-full w-full object-cover"
+                  />
                 </div>
                 <span className="text-gray-700">{collab.username}</span>
                 {collab.isAdmin && (
@@ -500,17 +488,11 @@ export default function IdeaDetailPage() {
               <div key={comment.id} className="flex gap-3">
                 <Link href={`/profile/${comment.username}`}>
                   <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-gray-200">
-                    {comment.profileImageUrl ? (
-                      <img
-                        src={`${API_URL}${comment.profileImageUrl}`}
-                        alt={comment.username}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-xs font-bold text-gray-400">
-                        {comment.username[0].toUpperCase()}
-                      </div>
-                    )}
+                    <img
+                      src={comment.profileImageUrl ? `${API_URL}${comment.profileImageUrl}` : "/images/default_user.jpg"}
+                      alt={comment.username}
+                      className="h-full w-full object-cover"
+                    />
                   </div>
                 </Link>
                 <div className="flex-1">

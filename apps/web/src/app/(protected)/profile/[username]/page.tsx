@@ -95,17 +95,11 @@ export default function ProfilePage() {
       {/* Profile header */}
       <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
         <div className="h-24 w-24 shrink-0 overflow-hidden rounded-full bg-gray-200">
-          {profile.profileImageUrl ? (
-            <img
-              src={`${API_URL}${profile.profileImageUrl}`}
-              alt={profile.username}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-gray-400">
-              {profile.username[0].toUpperCase()}
-            </div>
-          )}
+          <img
+            src={profile.profileImageUrl ? `${API_URL}${profile.profileImageUrl}` : "/images/default_user.jpg"}
+            alt={profile.username}
+            className="h-full w-full object-cover"
+          />
         </div>
 
         <div className="flex-1 text-center sm:text-left">

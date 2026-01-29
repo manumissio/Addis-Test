@@ -113,17 +113,11 @@ export default function ConversationPage() {
         {participant && (
           <Link href={`/profile/${participant.username}`} className="flex items-center gap-2">
             <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-gray-200">
-              {participant.profileImageUrl ? (
-                <img
-                  src={`${API_URL}${participant.profileImageUrl}`}
-                  alt={participant.username}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-xs font-bold text-gray-400">
-                  {participant.username[0].toUpperCase()}
-                </div>
-              )}
+              <img
+                src={participant.profileImageUrl ? `${API_URL}${participant.profileImageUrl}` : "/images/default_user.jpg"}
+                alt={participant.username}
+                className="h-full w-full object-cover"
+              />
             </div>
             <span className="text-sm font-medium text-gray-900 hover:text-addis-orange">
               {participant.username}

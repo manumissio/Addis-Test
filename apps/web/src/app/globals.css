@@ -1,10 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f5f5f5;
+  --foreground: #34495e;
   --addis-orange: #d67f1f;
   --addis-green: #0f9d58;
+  --addis-blue: #008bcc;
+  --addis-red: #d9534f;
+  --addis-dark: #2c3e50;
+  --addis-silver: #bdc3c7;
+  --addis-light: #ecf0f1;
 }
 
 @theme inline {
@@ -12,18 +17,42 @@
   --color-foreground: var(--foreground);
   --color-addis-orange: var(--addis-orange);
   --color-addis-green: var(--addis-green);
-  --font-sans: var(--font-geist-sans);
+  --color-addis-blue: var(--addis-blue);
+  --color-addis-red: var(--addis-red);
+  --color-addis-dark: var(--addis-dark);
+  --color-addis-silver: var(--addis-silver);
+  --color-addis-light: var(--addis-light);
+  --font-sans: var(--font-roboto), 'Roboto', sans-serif;
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+  font-weight: 300;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 400;
+}
+
+a {
+  transition: color 300ms;
+}
+
+/* Legacy flat button style */
+.btn-flat {
+  border-radius: 0;
+}
+
+/* Topic/category tag style matching legacy */
+.tag-category {
+  display: inline-block;
+  padding: 8px 16px;
+  border-left: 1px solid #e0e0e0;
+  border-right: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+  color: var(--addis-blue);
+  font-weight: bold;
+  box-shadow: 0 1px 1px #e0e0e0;
 }

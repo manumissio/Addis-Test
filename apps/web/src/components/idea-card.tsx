@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { api, ApiError } from "@/lib/api";
 
@@ -27,6 +28,12 @@ type IdeaCardProps = {
 };
 
 export function IdeaCard({ idea, liked, onLikeToggle }: IdeaCardProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const location = [idea.locationCity, idea.locationState, idea.locationCountry]
     .filter(Boolean)
     .join(", ");
@@ -48,7 +55,8 @@ export function IdeaCard({ idea, liked, onLikeToggle }: IdeaCardProps) {
     }
   }
 
-  const timeAgo = formatTimeAgo(idea.createdAt);
+  // Only calculate relative time after mount to avoid hydration mismatch
+  const timeAgo = mounted ? formatTimeAgo(idea.createdAt) : "";
 
   return (
     <article className="rounded-lg border bg-white p-5 transition-shadow hover:shadow-sm">
@@ -59,17 +67,11 @@ export function IdeaCard({ idea, liked, onLikeToggle }: IdeaCardProps) {
           className="flex items-center gap-2"
         >
           <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-gray-200">
-            {idea.creatorImageUrl ? (
-              <img
-                src={`${API_URL}${idea.creatorImageUrl}`}
-                alt={idea.creatorUsername}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-xs font-bold text-gray-400">
-                {idea.creatorUsername[0].toUpperCase()}
-              </div>
-            )}
+            <img
+              src={idea.creatorImageUrl ? `${API_URL}${idea.creatorImageUrl}` : "/images/default_user.jpg"}
+              alt={idea.creatorUsername}
+              className="h-full w-full object-cover"
+            />
           </div>
           <span className="text-sm font-medium text-gray-700 hover:text-addis-orange">
             {idea.creatorUsername}

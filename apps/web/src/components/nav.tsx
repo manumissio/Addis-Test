@@ -13,8 +13,8 @@ export function Nav() {
   return (
     <nav className="border-b bg-white">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-        <Link href="/feed" className="text-lg font-bold text-addis-orange">
-          Addis Ideas
+        <Link href="/feed" className="flex items-center gap-2">
+          <img src="/images/logo.png" alt="Addis Ideas" className="h-8 w-auto" />
         </Link>
 
         {/* Desktop */}
