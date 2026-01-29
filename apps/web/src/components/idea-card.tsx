@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { api, ApiError } from "@/lib/api";
 
@@ -27,6 +28,12 @@ type IdeaCardProps = {
 };
 
 export function IdeaCard({ idea, liked, onLikeToggle }: IdeaCardProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const location = [idea.locationCity, idea.locationState, idea.locationCountry]
     .filter(Boolean)
     .join(", ");
@@ -48,7 +55,8 @@ export function IdeaCard({ idea, liked, onLikeToggle }: IdeaCardProps) {
     }
   }
 
-  const timeAgo = formatTimeAgo(idea.createdAt);
+  // Only calculate relative time after mount to avoid hydration mismatch
+  const timeAgo = mounted ? formatTimeAgo(idea.createdAt) : "";
 
   return (
     <article className="rounded-lg border bg-white p-5 transition-shadow hover:shadow-sm">
