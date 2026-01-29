@@ -1,9 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, type ChangeEvent } from "react";
-import { ApiError } from "@/lib/api";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+import { ApiError, API_URL, getAssetUrl } from "@/lib/api";
 const MAX_SIZE = 2 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/gif"];
 
@@ -85,7 +83,7 @@ export function ImageUpload({
     }
   }
 
-  const displayUrl = preview ?? (currentImageUrl ? `${API_URL}${currentImageUrl}` : null);
+  const displayUrl = preview ?? getAssetUrl(currentImageUrl);
 
   return (
     <div className="space-y-2">

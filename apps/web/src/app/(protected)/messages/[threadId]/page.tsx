@@ -3,10 +3,8 @@
 import { useEffect, useState, useCallback, useRef, type FormEvent } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { api, ApiError } from "@/lib/api";
+import { api, ApiError, getAssetUrl } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
 type Message = {
   id: number;
@@ -114,7 +112,7 @@ export default function ConversationPage() {
           <Link href={`/profile/${participant.username}`} className="flex items-center gap-2">
             <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-gray-200">
               <img
-                src={participant.profileImageUrl ? `${API_URL}${participant.profileImageUrl}` : "/images/default_user.jpg"}
+                src={getAssetUrl(participant.profileImageUrl) ?? "/images/default_user.jpg"}
                 alt={participant.username}
                 className="h-full w-full object-cover"
               />
