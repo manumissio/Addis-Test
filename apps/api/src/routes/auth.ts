@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { randomBytes, scrypt, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
 import { users, sessions } from "@addis/db";
-import { registerSchema, loginSchema, updatePasswordSchema } from "@addis/shared";
+import { registerSchema, loginSchema, updatePasswordSchema, passwordSchema } from "@addis/shared";
 import { requireAuth } from "../plugins/auth.js";
 
 const scryptAsync = promisify(scrypt);
@@ -26,6 +26,9 @@ function generateSessionId(): string {
 }
 
 const SESSION_DURATION_MS = 3 * 60 * 60 * 1000; // 3 hours, matching original
+
+// Dummy hash for timing-safe comparison when user not found
+const DUMMY_HASH = "0000000000000000000000000000000000000000000000000000000000000000:0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
 
 // Stricter rate limits for auth endpoints (5 attempts per minute)
 const authRateLimit = {
@@ -115,8 +118,11 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       .limit(1);
 
     const user = result[0];
-    // Use constant-time comparison path even when user doesn't exist
-    if (!user || !(await verifyPassword(password, user.passwordHash))) {
+    // Always perform hash verification to prevent timing attacks
+    const hashToVerify = user?.passwordHash ?? DUMMY_HASH;
+    const isValid = await verifyPassword(password, hashToVerify);
+
+    if (!user || !isValid) {
       return reply.status(401).send({ error: "Invalid credentials" });
     }
 
@@ -213,6 +219,12 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 
     if (!email || !tempPassword || !newPassword) {
       return reply.status(400).send({ error: "All fields are required" });
+    }
+
+    // Validate new password strength
+    const passwordParsed = passwordSchema.safeParse(newPassword);
+    if (!passwordParsed.success) {
+      return reply.status(400).send({ error: passwordParsed.error.flatten().fieldErrors });
     }
 
     const result = await app.db

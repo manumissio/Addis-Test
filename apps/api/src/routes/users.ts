@@ -200,17 +200,23 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
 
   // POST /api/users/topics
   app.post("/topics", { preHandler: [requireAuth] }, async (request, reply) => {
-    const { topicName } = request.body as { topicName: string };
-    if (!topicName || topicName.length > 255) {
+    const { topicName } = request.body as { topicName?: string };
+
+    // Validate and trim input
+    if (!topicName || typeof topicName !== "string") {
+      return reply.status(400).send({ error: "Topic name is required" });
+    }
+    const trimmed = topicName.trim();
+    if (trimmed.length === 0 || trimmed.length > 255) {
       return reply.status(400).send({ error: "Invalid topic name" });
     }
 
-    // Check if already added
+    // Check if already added (using trimmed value)
     const existing = await app.db
       .select({ id: userTopics.id })
       .from(userTopics)
       .where(
-        sql`${userTopics.userId} = ${request.userId!} and ${userTopics.topicName} = ${topicName}`
+        sql`${userTopics.userId} = ${request.userId!} and ${userTopics.topicName} = ${trimmed}`
       )
       .limit(1);
 
@@ -220,7 +226,7 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
 
     await app.db.insert(userTopics).values({
       userId: request.userId!,
-      topicName,
+      topicName: trimmed,
     });
 
     return { success: true };

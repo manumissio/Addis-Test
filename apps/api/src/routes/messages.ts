@@ -1,5 +1,5 @@
 import type { FastifyPluginAsync } from "fastify";
-import { eq, and, desc, ne } from "drizzle-orm";
+import { eq, and, desc, ne, inArray, sql } from "drizzle-orm";
 import { messages, messageThreads, threadParticipants, users } from "@addis/db";
 import { messageSchema, paginationSchema } from "@addis/shared";
 import { requireAuth } from "../plugins/auth.js";
@@ -25,47 +25,50 @@ export const messagesRoutes: FastifyPluginAsync = async (app) => {
 
     const threadIds = userThreads.map((t) => t.threadId);
 
-    // For each thread, get the other participant and the latest message
-    const threads = await Promise.all(
-      threadIds.map(async (threadId) => {
-        const [otherParticipant, latestMessage] = await Promise.all([
-          // Get other participant info
-          app.db
-            .select({
-              userId: users.id,
-              username: users.username,
-              profileImageUrl: users.profileImageUrl,
-            })
-            .from(threadParticipants)
-            .innerJoin(users, eq(threadParticipants.userId, users.id))
-            .where(
-              and(
-                eq(threadParticipants.threadId, threadId),
-                ne(threadParticipants.userId, request.userId!)
-              )
-            )
-            .limit(1),
-          // Get latest message
-          app.db
-            .select({
-              content: messages.content,
-              createdAt: messages.createdAt,
-              senderUsername: users.username,
-            })
-            .from(messages)
-            .innerJoin(users, eq(messages.userId, users.id))
-            .where(eq(messages.threadId, threadId))
-            .orderBy(desc(messages.createdAt))
-            .limit(1),
-        ]);
-
-        return {
-          threadId,
-          participant: otherParticipant[0] ?? null,
-          lastMessage: latestMessage[0] ?? null,
-        };
+    // Batch fetch: get all partners in ONE query
+    const partners = await app.db
+      .select({
+        threadId: threadParticipants.threadId,
+        userId: users.id,
+        username: users.username,
+        profileImageUrl: users.profileImageUrl,
       })
-    );
+      .from(threadParticipants)
+      .innerJoin(users, eq(threadParticipants.userId, users.id))
+      .where(
+        and(
+          inArray(threadParticipants.threadId, threadIds),
+          ne(threadParticipants.userId, request.userId!)
+        )
+      );
+
+    // Batch fetch: get latest message per thread using DISTINCT ON
+    const latestMessages = await app.db
+      .selectDistinctOn([messages.threadId], {
+        threadId: messages.threadId,
+        content: messages.content,
+        createdAt: messages.createdAt,
+        senderUsername: users.username,
+      })
+      .from(messages)
+      .innerJoin(users, eq(messages.userId, users.id))
+      .where(inArray(messages.threadId, threadIds))
+      .orderBy(messages.threadId, desc(messages.createdAt));
+
+    // Combine in memory
+    const threads = threadIds.map((threadId) => {
+      const partner = partners.find((p) => p.threadId === threadId);
+      const msg = latestMessages.find((m) => m.threadId === threadId);
+      return {
+        threadId,
+        participant: partner
+          ? { userId: partner.userId, username: partner.username, profileImageUrl: partner.profileImageUrl }
+          : null,
+        lastMessage: msg
+          ? { content: msg.content, createdAt: msg.createdAt, senderUsername: msg.senderUsername }
+          : null,
+      };
+    });
 
     // Sort by latest message timestamp (most recent first), threads without messages last
     threads.sort((a, b) => {

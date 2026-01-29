@@ -74,15 +74,17 @@ export default function DiscoverPage() {
     [query, topic]
   );
 
-  // Run search on mount if URL has params
+  // Run search when URL params change (including back/forward navigation)
   useEffect(() => {
     const urlQ = searchParams.get("q") ?? "";
     const urlTopic = searchParams.get("topic") ?? "";
+
+    // Sync local state with URL
+    setQuery(urlQ);
+    setTopic(urlTopic);
+
     if (urlQ || urlTopic) {
-      setQuery(urlQ);
-      setTopic(urlTopic);
       setLoading(true);
-      // Defer to allow state to settle
       const params = new URLSearchParams();
       if (urlQ) params.set("q", urlQ);
       if (urlTopic) params.set("topic", urlTopic);
@@ -98,8 +100,12 @@ export default function DiscoverPage() {
         setOffset(data.ideas.length);
         setSearched(true);
       }).finally(() => setLoading(false));
+    } else {
+      // Clear results when URL has no params
+      setIdeas([]);
+      setSearched(false);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   function handleSearch() {
     // Update URL params
