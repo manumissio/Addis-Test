@@ -2,9 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { api } from "@/lib/api";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+import { api, getAssetUrl } from "@/lib/api";
 
 type ThreadSummary = {
   threadId: number;
@@ -67,7 +65,7 @@ export default function MessagesInboxPage() {
               {/* Avatar */}
               <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-gray-200">
                 <img
-                  src={thread.participant?.profileImageUrl ? `${API_URL}${thread.participant.profileImageUrl}` : "/images/default_user.jpg"}
+                  src={getAssetUrl(thread.participant?.profileImageUrl) ?? "/images/default_user.jpg"}
                   alt={thread.participant?.username ?? "User"}
                   className="h-full w-full object-cover"
                 />

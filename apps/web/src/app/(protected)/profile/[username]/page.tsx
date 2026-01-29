@@ -3,11 +3,9 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { api } from "@/lib/api";
+import { api, getAssetUrl } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { TopicManager } from "@/components/topic-manager";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
 type UserProfile = {
   id: number;
@@ -96,7 +94,7 @@ export default function ProfilePage() {
       <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
         <div className="h-24 w-24 shrink-0 overflow-hidden rounded-full bg-gray-200">
           <img
-            src={profile.profileImageUrl ? `${API_URL}${profile.profileImageUrl}` : "/images/default_user.jpg"}
+            src={getAssetUrl(profile.profileImageUrl) ?? "/images/default_user.jpg"}
             alt={profile.username}
             className="h-full w-full object-cover"
           />

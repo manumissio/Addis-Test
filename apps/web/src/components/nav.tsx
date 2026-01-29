@@ -2,37 +2,58 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { getAssetUrl } from "@/lib/api";
 
 export function Nav() {
   const { user, logout } = useAuth();
+  const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
 
   if (!user) return null;
 
+  const isActive = (path: string) =>
+    pathname === path || pathname.startsWith(path + "/");
+
+  const linkClass = (path: string) =>
+    `rounded-md px-3 py-2 text-sm transition-colors ${
+      isActive(path)
+        ? "text-addis-orange font-medium bg-orange-50"
+        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+    }`;
+
+  const profileImageUrl = getAssetUrl(user.profileImageUrl);
+
   return (
-    <nav className="border-b bg-white">
-      <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-        <Link href="/feed" className="flex items-center gap-2">
-          <img src="/images/logo.png" alt="Addis Ideas" className="h-8 w-auto" />
-        </Link>
-
-        {/* Desktop */}
-        <div className="hidden items-center gap-6 text-sm sm:flex">
-          <Link href="/feed" className="text-gray-600 hover:text-gray-900">
-            Feed
-          </Link>
-          <Link href="/discover" className="text-gray-600 hover:text-gray-900">
-            Discover
-          </Link>
-          <Link href="/messages" className="text-gray-600 hover:text-gray-900">
-            Messages
+    <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-md">
+      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
+        {/* Logo */}
+        <div className="flex items-center gap-6">
+          <Link href="/feed" className="flex items-center gap-2">
+            <img src="/images/logo.png" alt="Addis Ideas" className="h-8 w-auto" />
           </Link>
 
-          {/* Primary CTA */}
+          {/* Desktop Navigation */}
+          <div className="hidden items-center gap-1 sm:flex">
+            <Link href="/feed" className={linkClass("/feed")}>
+              Feed
+            </Link>
+            <Link href="/discover" className={linkClass("/discover")}>
+              Discover
+            </Link>
+            <Link href="/messages" className={linkClass("/messages")}>
+              Messages
+            </Link>
+          </div>
+        </div>
+
+        {/* Desktop Right Side */}
+        <div className="hidden items-center gap-4 sm:flex">
+          {/* Primary CTA - rounded-md for consistency */}
           <Link
             href="/ideas/new"
-            className="rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-gray-800"
+            className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-gray-800"
           >
             New Idea
           </Link>
@@ -47,9 +68,9 @@ export function Nav() {
               className="group flex items-center gap-2 rounded-full p-1 pr-3 transition-colors hover:bg-gray-50"
             >
               <div className="h-8 w-8 overflow-hidden rounded-full bg-gray-200 ring-1 ring-gray-200 transition-all group-hover:ring-gray-300">
-                {user.profileImageUrl ? (
+                {profileImageUrl ? (
                   <img
-                    src={user.profileImageUrl}
+                    src={profileImageUrl}
                     alt={user.username}
                     className="h-full w-full object-cover"
                   />
@@ -102,12 +123,12 @@ export function Nav() {
       {menuOpen && (
         <div className="border-t px-4 py-3 sm:hidden">
           <div className="flex flex-col gap-3 text-sm">
-            {/* User info at top of mobile menu */}
+            {/* User info at top */}
             <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
               <div className="h-10 w-10 overflow-hidden rounded-full bg-gray-200">
-                {user.profileImageUrl ? (
+                {profileImageUrl ? (
                   <img
-                    src={user.profileImageUrl}
+                    src={profileImageUrl}
                     alt={user.username}
                     className="h-full w-full object-cover"
                   />
@@ -132,14 +153,14 @@ export function Nav() {
             <Link
               href="/feed"
               onClick={() => setMenuOpen(false)}
-              className="text-gray-600 hover:text-gray-900"
+              className={isActive("/feed") ? "font-medium text-addis-orange" : "text-gray-600 hover:text-gray-900"}
             >
               Feed
             </Link>
             <Link
               href="/discover"
               onClick={() => setMenuOpen(false)}
-              className="text-gray-600 hover:text-gray-900"
+              className={isActive("/discover") ? "font-medium text-addis-orange" : "text-gray-600 hover:text-gray-900"}
             >
               Discover
             </Link>
@@ -153,14 +174,14 @@ export function Nav() {
             <Link
               href="/messages"
               onClick={() => setMenuOpen(false)}
-              className="text-gray-600 hover:text-gray-900"
+              className={isActive("/messages") ? "font-medium text-addis-orange" : "text-gray-600 hover:text-gray-900"}
             >
               Messages
             </Link>
             <Link
               href="/settings"
               onClick={() => setMenuOpen(false)}
-              className="text-gray-600 hover:text-gray-900"
+              className={isActive("/settings") ? "font-medium text-addis-orange" : "text-gray-600 hover:text-gray-900"}
             >
               Settings
             </Link>

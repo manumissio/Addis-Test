@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { api, ApiError } from "@/lib/api";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+import { api, ApiError, getAssetUrl } from "@/lib/api";
 
 type IdeaCardProps = {
   idea: {
@@ -68,7 +66,7 @@ export function IdeaCard({ idea, liked, onLikeToggle }: IdeaCardProps) {
         >
           <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-gray-200">
             <img
-              src={idea.creatorImageUrl ? `${API_URL}${idea.creatorImageUrl}` : "/images/default_user.jpg"}
+              src={getAssetUrl(idea.creatorImageUrl) ?? "/images/default_user.jpg"}
               alt={idea.creatorUsername}
               className="h-full w-full object-cover"
             />
@@ -90,7 +88,7 @@ export function IdeaCard({ idea, liked, onLikeToggle }: IdeaCardProps) {
         </p>
         {idea.imageUrl && (
           <img
-            src={`${API_URL}${idea.imageUrl}`}
+            src={getAssetUrl(idea.imageUrl)!}
             alt={idea.title}
             className="mt-3 max-h-64 w-full rounded-md object-cover"
           />

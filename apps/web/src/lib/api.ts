@@ -1,4 +1,11 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+
+// Helper to convert relative API paths to full URLs (for images served from API)
+export function getAssetUrl(path: string | null | undefined): string | null {
+  if (!path) return null;
+  if (path.startsWith("http") || path.startsWith("data:")) return path;
+  return `${API_URL}${path}`;
+}
 
 type RequestOptions = {
   method?: string;

@@ -3,10 +3,8 @@
 import { useEffect, useState, useCallback, type FormEvent } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { api, ApiError } from "@/lib/api";
+import { api, ApiError, getAssetUrl } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
 type IdeaDetail = {
   id: number;
@@ -241,7 +239,7 @@ export default function IdeaDetailPage() {
         >
           <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-gray-200">
             <img
-              src={idea.creatorImageUrl ? `${API_URL}${idea.creatorImageUrl}` : "/images/default_user.jpg"}
+              src={getAssetUrl(idea.creatorImageUrl) ?? "/images/default_user.jpg"}
               alt={idea.creatorUsername}
               className="h-full w-full object-cover"
             />
@@ -308,7 +306,7 @@ export default function IdeaDetailPage() {
 
       {idea.imageUrl && (
         <img
-          src={`${API_URL}${idea.imageUrl}`}
+          src={getAssetUrl(idea.imageUrl)!}
           alt={idea.title}
           className="w-full rounded-lg object-cover"
         />
@@ -434,7 +432,7 @@ export default function IdeaDetailPage() {
               >
                 <div className="h-6 w-6 shrink-0 overflow-hidden rounded-full bg-gray-200">
                   <img
-                    src={collab.profileImageUrl ? `${API_URL}${collab.profileImageUrl}` : "/images/default_user.jpg"}
+                    src={getAssetUrl(collab.profileImageUrl) ?? "/images/default_user.jpg"}
                     alt={collab.username}
                     className="h-full w-full object-cover"
                   />
@@ -489,7 +487,7 @@ export default function IdeaDetailPage() {
                 <Link href={`/profile/${comment.username}`}>
                   <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-gray-200">
                     <img
-                      src={comment.profileImageUrl ? `${API_URL}${comment.profileImageUrl}` : "/images/default_user.jpg"}
+                      src={getAssetUrl(comment.profileImageUrl) ?? "/images/default_user.jpg"}
                       alt={comment.username}
                       className="h-full w-full object-cover"
                     />
