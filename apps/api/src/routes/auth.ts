@@ -3,7 +3,8 @@ import { eq } from "drizzle-orm";
 import { randomBytes, scrypt, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
 import { users, sessions } from "@addis/db";
-import { registerSchema, loginSchema } from "@addis/shared";
+import { registerSchema, loginSchema, updatePasswordSchema } from "@addis/shared";
+import { requireAuth } from "../plugins/auth.js";
 
 const scryptAsync = promisify(scrypt);
 
@@ -232,6 +233,40 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       .update(users)
       .set({ passwordHash: newHash, tempPasswordHash: null })
       .where(eq(users.id, user.id));
+
+    return { success: true };
+  });
+
+  // POST /api/auth/password — change password (logged-in user)
+  app.post("/password", { preHandler: [requireAuth] }, async (request, reply) => {
+    const parsed = updatePasswordSchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.status(400).send({ error: parsed.error.flatten().fieldErrors });
+    }
+
+    const { currentPassword, newPassword } = parsed.data;
+
+    const result = await app.db
+      .select({ passwordHash: users.passwordHash })
+      .from(users)
+      .where(eq(users.id, request.userId!))
+      .limit(1);
+
+    const user = result[0];
+    if (!user) {
+      return reply.status(404).send({ error: "User not found" });
+    }
+
+    const valid = await verifyPassword(currentPassword, user.passwordHash);
+    if (!valid) {
+      return reply.status(401).send({ error: "Current password is incorrect" });
+    }
+
+    const newHash = await hashPassword(newPassword);
+    await app.db
+      .update(users)
+      .set({ passwordHash: newHash })
+      .where(eq(users.id, request.userId!));
 
     return { success: true };
   });

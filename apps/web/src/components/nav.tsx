@@ -34,6 +34,9 @@ export function Nav() {
           <Link href="/messages" className="text-gray-600 hover:text-gray-900">
             Messages
           </Link>
+          <Link href="/settings" className="text-gray-600 hover:text-gray-900">
+            Settings
+          </Link>
           <Link
             href="/ideas/new"
             className="rounded-md bg-addis-orange px-3 py-1.5 text-white hover:bg-addis-orange/90"
@@ -105,6 +108,13 @@ export function Nav() {
               className="text-gray-600 hover:text-gray-900"
             >
               Messages
+            </Link>
+            <Link
+              href="/settings"
+              onClick={() => setMenuOpen(false)}
+              className="text-gray-600 hover:text-gray-900"
+            >
+              Settings
             </Link>
             <button
               onClick={() => { setMenuOpen(false); logout(); }}

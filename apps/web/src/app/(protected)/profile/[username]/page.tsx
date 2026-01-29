@@ -33,12 +33,17 @@ type Idea = {
   createdAt: string;
 };
 
+type Collaboration = Idea & {
+  creatorUsername: string;
+};
+
 export default function ProfilePage() {
   const params = useParams();
   const username = params.username as string;
   const { user: currentUser } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [ideas, setIdeas] = useState<Idea[]>([]);
+  const [collaborations, setCollaborations] = useState<Collaboration[]>([]);
   const [topics, setTopics] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -47,14 +52,16 @@ export default function ProfilePage() {
 
   const loadProfile = useCallback(async () => {
     try {
-      const [profileData, ideasData, topicsData] = await Promise.all([
+      const [profileData, ideasData, collabsData, topicsData] = await Promise.all([
         api<{ user: UserProfile }>(`/api/users/${encodeURIComponent(username)}`),
         api<{ ideas: Idea[] }>(`/api/users/${encodeURIComponent(username)}/ideas?limit=20&offset=0`),
+        api<{ collaborations: Collaboration[] }>(`/api/users/${encodeURIComponent(username)}/collaborations`),
         api<{ topics: { topicName: string }[] }>(`/api/users/${encodeURIComponent(username)}/topics`),
       ]);
 
       setProfile(profileData.user);
       setIdeas(ideasData.ideas);
+      setCollaborations(collabsData.collaborations);
       setTopics(topicsData.topics.map((t) => t.topicName));
     } catch {
       setError("Failed to load profile");
@@ -181,6 +188,32 @@ export default function ProfilePage() {
           </div>
         )}
       </section>
+
+      {/* Collaborations */}
+      {collaborations.length > 0 && (
+        <section>
+          <h2 className="mb-4 text-sm font-semibold text-gray-700">Collaborating On</h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {collaborations.map((collab) => (
+              <Link
+                key={collab.id}
+                href={`/ideas/${collab.id}`}
+                className="rounded-lg border p-4 hover:border-addis-orange/50 hover:shadow-sm"
+              >
+                <h3 className="font-medium">{collab.title}</h3>
+                <p className="mt-1 text-xs text-gray-400">by {collab.creatorUsername}</p>
+                <p className="mt-1 line-clamp-2 text-sm text-gray-500">
+                  {collab.description}
+                </p>
+                <div className="mt-3 flex gap-4 text-xs text-gray-400">
+                  <span>{collab.likesCount} likes</span>
+                  <span>{collab.commentsCount} comments</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

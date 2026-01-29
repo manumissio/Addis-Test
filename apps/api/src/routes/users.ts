@@ -1,6 +1,6 @@
 import type { FastifyPluginAsync } from "fastify";
 import { eq, sql } from "drizzle-orm";
-import { users, ideas, profileViews, messages, userTopics } from "@addis/db";
+import { users, ideas, profileViews, messages, userTopics, collaborations } from "@addis/db";
 import { updateProfileSchema, updateUsernameSchema, updateEmailSchema, paginationSchema } from "@addis/shared";
 import { requireAuth } from "../plugins/auth.js";
 
@@ -93,6 +93,45 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
 
     return { topics };
   });
+
+  // GET /api/users/:username/collaborations
+  app.get<{ Params: { username: string } }>(
+    "/:username/collaborations",
+    async (request, reply) => {
+      const { username } = request.params;
+
+      const user = await app.db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.username, username))
+        .limit(1);
+
+      if (user.length === 0) {
+        return reply.status(404).send({ error: "User not found" });
+      }
+
+      // Fetch ideas this user is collaborating on (excluding their own ideas)
+      const collabs = await app.db
+        .select({
+          id: ideas.id,
+          title: ideas.title,
+          description: ideas.description,
+          imageUrl: ideas.imageUrl,
+          likesCount: ideas.likesCount,
+          commentsCount: ideas.commentsCount,
+          createdAt: ideas.createdAt,
+          creatorUsername: users.username,
+        })
+        .from(collaborations)
+        .innerJoin(ideas, eq(collaborations.ideaId, ideas.id))
+        .innerJoin(users, eq(ideas.creatorId, users.id))
+        .where(eq(collaborations.userId, user[0].id))
+        .orderBy(sql`${collaborations.createdAt} desc`)
+        .limit(20);
+
+      return { collaborations: collabs };
+    }
+  );
 
   // PATCH /api/users/profile
   app.patch("/profile", { preHandler: [requireAuth] }, async (request, reply) => {
