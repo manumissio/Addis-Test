@@ -5,6 +5,7 @@ import { mkdir, writeFile, unlink } from "node:fs/promises";
 import { join, resolve, sep } from "node:path";
 import { users, ideas } from "@addis/db";
 import { requireAuth } from "../plugins/auth.js";
+import { requireIdeaOwnership } from "../utils/ownership.js";
 
 // Validate image by reading magic bytes, not trusting client MIME type
 const MAGIC_BYTES: Record<string, Buffer> = {
@@ -108,19 +109,14 @@ export const uploadsRoutes: FastifyPluginAsync = async (app) => {
         return reply.status(400).send({ error: "Invalid idea ID" });
       }
 
-      // Verify ownership
-      const idea = await app.db
-        .select({ creatorId: ideas.creatorId, imageUrl: ideas.imageUrl })
-        .from(ideas)
-        .where(eq(ideas.id, ideaId))
-        .limit(1);
-
-      if (idea.length === 0) {
-        return reply.status(404).send({ error: "Idea not found" });
-      }
-      if (idea[0].creatorId !== request.userId) {
-        return reply.status(403).send({ error: "Not authorized" });
-      }
+      // Verify ownership and get current image URL
+      const idea = await requireIdeaOwnership<{ creatorId: number; imageUrl: string | null }>(
+        app.db,
+        reply,
+        ideaId,
+        request.userId!,
+        { creatorId: ideas.creatorId, imageUrl: ideas.imageUrl }
+      );
 
       const data = await request.file();
       if (!data) {
@@ -148,8 +144,8 @@ export const uploadsRoutes: FastifyPluginAsync = async (app) => {
       const imageUrl = `/uploads/ideas/${safeFilename}`;
 
       // Delete old image
-      if (idea[0].imageUrl) {
-        await safeDeleteFile(idea[0].imageUrl);
+      if (idea.imageUrl) {
+        await safeDeleteFile(idea.imageUrl);
       }
 
       await app.db

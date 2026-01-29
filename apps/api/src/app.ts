@@ -14,6 +14,7 @@ import { usersRoutes } from "./routes/users.js";
 import { ideasRoutes } from "./routes/ideas.js";
 import { messagesRoutes } from "./routes/messages.js";
 import { uploadsRoutes } from "./routes/uploads.js";
+import { errorHandler } from "./utils/errors.js";
 
 export async function buildApp() {
   const app = Fastify({
@@ -51,6 +52,9 @@ export async function buildApp() {
 
   // Auth (session resolution)
   await app.register(authPlugin);
+
+  // Error handling
+  app.setErrorHandler(errorHandler);
 
   // Routes
   await app.register(authRoutes, { prefix: "/api/auth" });

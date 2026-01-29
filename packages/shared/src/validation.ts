@@ -80,6 +80,24 @@ export const paginationSchema = z.object({
   offset: z.coerce.number().int().min(0).default(0),
 });
 
+export const topicSchema = z.object({
+  topicName: z.string().min(1, "Topic name is required").max(255),
+});
+
+export const stakeholderSchema = z.object({
+  stakeholder: z.string().min(1, "Stakeholder is required").max(255),
+});
+
+export const passwordResetRequestSchema = z.object({
+  email: emailSchema,
+});
+
+export const passwordResetConfirmSchema = z.object({
+  email: emailSchema,
+  tempPassword: z.string().min(1, "Temporary password is required"),
+  newPassword: passwordSchema,
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type CreateIdeaInput = z.infer<typeof createIdeaSchema>;
@@ -87,3 +105,7 @@ export type UpdateIdeaInput = z.infer<typeof updateIdeaSchema>;
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
 export type MessageInput = z.infer<typeof messageSchema>;
 export type PaginationInput = z.infer<typeof paginationSchema>;
+export type TopicInput = z.infer<typeof topicSchema>;
+export type StakeholderInput = z.infer<typeof stakeholderSchema>;
+export type PasswordResetRequestInput = z.infer<typeof passwordResetRequestSchema>;
+export type PasswordResetConfirmInput = z.infer<typeof passwordResetConfirmSchema>;

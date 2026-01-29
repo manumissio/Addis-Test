@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { randomBytes, scrypt, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
 import { users, sessions } from "@addis/db";
-import { registerSchema, loginSchema, updatePasswordSchema, passwordSchema } from "@addis/shared";
+import { registerSchema, loginSchema, updatePasswordSchema, passwordSchema, passwordResetRequestSchema, passwordResetConfirmSchema } from "@addis/shared";
 import { requireAuth } from "../plugins/auth.js";
 
 const scryptAsync = promisify(scrypt);
@@ -187,10 +187,12 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 
   // POST /api/auth/password-reset/request
   app.post("/password-reset/request", { config: { rateLimit: authRateLimit } }, async (request, reply) => {
-    const { email } = request.body as { email?: string };
-    if (!email) {
-      return reply.status(400).send({ error: "Email is required" });
+    const parsed = passwordResetRequestSchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.status(400).send({ error: parsed.error.flatten().fieldErrors });
     }
+
+    const { email } = parsed.data;
 
     const result = await app.db
       .select({ id: users.id })
@@ -225,22 +227,14 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 
   // POST /api/auth/password-reset/confirm
   app.post("/password-reset/confirm", { config: { rateLimit: authRateLimit } }, async (request, reply) => {
-    const { email, tempPassword, newPassword } = request.body as {
-      email?: string;
-      tempPassword?: string;
-      newPassword?: string;
-    };
-
-    if (!email || !tempPassword || !newPassword) {
-      return reply.status(400).send({ error: "All fields are required" });
+    const parsed = passwordResetConfirmSchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.status(400).send({ error: parsed.error.flatten().fieldErrors });
     }
 
-    // Validate new password strength
-    const passwordParsed = passwordSchema.safeParse(newPassword);
-    if (!passwordParsed.success) {
-      return reply.status(400).send({ error: passwordParsed.error.flatten().fieldErrors });
-    }
+    const { email, tempPassword, newPassword } = parsed.data;
 
+    // Password is already validated by the schema
     const result = await app.db
       .select({
         id: users.id,
