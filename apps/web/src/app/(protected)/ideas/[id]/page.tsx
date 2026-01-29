@@ -115,8 +115,16 @@ export default function IdeaDetailPage() {
         );
       }
     } catch (err) {
+      // On 409 conflict, we're out of sync with server - fetch fresh data
       if (err instanceof ApiError && err.status === 409) {
-        setLiked(!liked);
+        const fresh = await api<{
+          idea: IdeaDetail;
+          isLiked: boolean;
+          isCollaborating: boolean;
+        }>(`/api/ideas/${ideaId}`);
+        setIdea(fresh.idea);
+        setLiked(fresh.isLiked);
+        setCollaborating(fresh.isCollaborating);
       }
     }
   }
@@ -151,8 +159,16 @@ export default function IdeaDetailPage() {
         }
       }
     } catch (err) {
+      // On 409 conflict, we're out of sync with server - fetch fresh data
       if (err instanceof ApiError && err.status === 409) {
-        setCollaborating(true);
+        const [fresh, collabData] = await Promise.all([
+          api<{ idea: IdeaDetail; isLiked: boolean; isCollaborating: boolean }>(`/api/ideas/${ideaId}`),
+          api<{ collaborators: Collaborator[] }>(`/api/ideas/${ideaId}/collaborators`),
+        ]);
+        setIdea(fresh.idea);
+        setLiked(fresh.isLiked);
+        setCollaborating(fresh.isCollaborating);
+        setCollaborators(collabData.collaborators);
       }
     }
   }
