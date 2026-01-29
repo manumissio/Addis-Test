@@ -31,9 +31,11 @@ export default function FeedPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [offset, setOffset] = useState(0);
+  const [error, setError] = useState("");
 
   const loadFeed = useCallback(async (currentOffset: number, append: boolean) => {
     try {
+      setError("");
       const data = await api<{ ideas: FeedIdea[]; likedIdeaIds: number[] }>(
         `/api/ideas?limit=${PAGE_SIZE}&offset=${currentOffset}`
       );
@@ -52,6 +54,8 @@ export default function FeedPage() {
 
       setHasMore(data.ideas.length === PAGE_SIZE);
       setOffset(currentOffset + data.ideas.length);
+    } catch {
+      setError("Failed to load feed. Please try again.");
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -77,6 +81,23 @@ export default function FeedPage() {
     return (
       <div className="flex justify-center py-12">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-addis-orange border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (error && ideas.length === 0) {
+    return (
+      <div className="py-12 text-center">
+        <p className="mb-2 text-red-600">{error}</p>
+        <button
+          onClick={() => {
+            setLoading(true);
+            loadFeed(0, false);
+          }}
+          className="text-addis-orange hover:underline"
+        >
+          Retry
+        </button>
       </div>
     );
   }

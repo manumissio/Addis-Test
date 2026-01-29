@@ -3,7 +3,8 @@ import { eq } from "drizzle-orm";
 import { randomBytes, scrypt, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
 import { users, sessions } from "@addis/db";
-import { registerSchema, loginSchema } from "@addis/shared";
+import { registerSchema, loginSchema, updatePasswordSchema } from "@addis/shared";
+import { requireAuth } from "../plugins/auth.js";
 
 const scryptAsync = promisify(scrypt);
 
@@ -26,9 +27,15 @@ function generateSessionId(): string {
 
 const SESSION_DURATION_MS = 3 * 60 * 60 * 1000; // 3 hours, matching original
 
+// Stricter rate limits for auth endpoints (5 attempts per minute)
+const authRateLimit = {
+  max: 5,
+  timeWindow: "1 minute",
+};
+
 export const authRoutes: FastifyPluginAsync = async (app) => {
   // POST /api/auth/register
-  app.post("/register", async (request, reply) => {
+  app.post("/register", { config: { rateLimit: authRateLimit } }, async (request, reply) => {
     const parsed = registerSchema.safeParse(request.body);
     if (!parsed.success) {
       return reply.status(400).send({ error: parsed.error.flatten().fieldErrors });
@@ -90,7 +97,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
   });
 
   // POST /api/auth/login
-  app.post("/login", async (request, reply) => {
+  app.post("/login", { config: { rateLimit: authRateLimit } }, async (request, reply) => {
     const parsed = loginSchema.safeParse(request.body);
     if (!parsed.success) {
       return reply.status(400).send({ error: "Invalid credentials" });
@@ -159,7 +166,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
   });
 
   // POST /api/auth/password-reset/request
-  app.post("/password-reset/request", async (request, reply) => {
+  app.post("/password-reset/request", { config: { rateLimit: authRateLimit } }, async (request, reply) => {
     const { email } = request.body as { email?: string };
     if (!email) {
       return reply.status(400).send({ error: "Email is required" });
@@ -197,7 +204,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
   });
 
   // POST /api/auth/password-reset/confirm
-  app.post("/password-reset/confirm", async (request, reply) => {
+  app.post("/password-reset/confirm", { config: { rateLimit: authRateLimit } }, async (request, reply) => {
     const { email, tempPassword, newPassword } = request.body as {
       email?: string;
       tempPassword?: string;
@@ -232,6 +239,40 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       .update(users)
       .set({ passwordHash: newHash, tempPasswordHash: null })
       .where(eq(users.id, user.id));
+
+    return { success: true };
+  });
+
+  // POST /api/auth/password — change password (logged-in user)
+  app.post("/password", { preHandler: [requireAuth], config: { rateLimit: authRateLimit } }, async (request, reply) => {
+    const parsed = updatePasswordSchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.status(400).send({ error: parsed.error.flatten().fieldErrors });
+    }
+
+    const { currentPassword, newPassword } = parsed.data;
+
+    const result = await app.db
+      .select({ passwordHash: users.passwordHash })
+      .from(users)
+      .where(eq(users.id, request.userId!))
+      .limit(1);
+
+    const user = result[0];
+    if (!user) {
+      return reply.status(404).send({ error: "User not found" });
+    }
+
+    const valid = await verifyPassword(currentPassword, user.passwordHash);
+    if (!valid) {
+      return reply.status(401).send({ error: "Current password is incorrect" });
+    }
+
+    const newHash = await hashPassword(newPassword);
+    await app.db
+      .update(users)
+      .set({ passwordHash: newHash })
+      .where(eq(users.id, request.userId!));
 
     return { success: true };
   });

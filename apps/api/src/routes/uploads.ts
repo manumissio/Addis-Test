@@ -2,7 +2,7 @@ import type { FastifyPluginAsync } from "fastify";
 import { eq } from "drizzle-orm";
 import { randomBytes } from "node:crypto";
 import { mkdir, writeFile, unlink } from "node:fs/promises";
-import { join, resolve } from "node:path";
+import { join, resolve, sep } from "node:path";
 import { users, ideas } from "@addis/db";
 import { requireAuth } from "../plugins/auth.js";
 
@@ -28,7 +28,8 @@ const UPLOAD_DIR = join(process.cwd(), "uploads");
 /** Resolve a stored image URL to a safe filesystem path, rejecting traversal attempts. */
 function safeUploadPath(storedUrl: string): string | null {
   const resolved = resolve(process.cwd(), storedUrl.replace(/^\//, ""));
-  if (!resolved.startsWith(UPLOAD_DIR)) return null;
+  // Append path separator to prevent sibling directory bypass (e.g., /uploads-fake)
+  if (!resolved.startsWith(UPLOAD_DIR + sep)) return null;
   return resolved;
 }
 

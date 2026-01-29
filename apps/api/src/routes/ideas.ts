@@ -237,21 +237,19 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
       const ideaId = parseInt(request.params.id, 10);
       if (isNaN(ideaId)) return reply.status(400).send({ error: "Invalid idea ID" });
 
-      const existing = await app.db
-        .select({ id: ideaLikes.id })
-        .from(ideaLikes)
-        .where(and(eq(ideaLikes.userId, request.userId!), eq(ideaLikes.ideaId, ideaId)))
-        .limit(1);
-
-      if (existing.length > 0) {
-        return reply.status(409).send({ error: "Already liked" });
+      try {
+        await app.db.insert(ideaLikes).values({ userId: request.userId!, ideaId });
+        await app.db
+          .update(ideas)
+          .set({ likesCount: sql`${ideas.likesCount} + 1` })
+          .where(eq(ideas.id, ideaId));
+      } catch (err: unknown) {
+        // Handle unique constraint violation (Postgres error 23505)
+        if (err && typeof err === "object" && "code" in err && err.code === "23505") {
+          return reply.status(409).send({ error: "Already liked" });
+        }
+        throw err;
       }
-
-      await app.db.insert(ideaLikes).values({ userId: request.userId!, ideaId });
-      await app.db
-        .update(ideas)
-        .set({ likesCount: sql`${ideas.likesCount} + 1` })
-        .where(eq(ideas.id, ideaId));
 
       return { success: true };
     }
@@ -297,29 +295,26 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
 
       if (idea.length === 0) return reply.status(404).send({ error: "Idea not found" });
 
-      // Prevent duplicate collaboration
-      const alreadyCollaborating = await app.db
-        .select({ id: collaborations.id })
-        .from(collaborations)
-        .where(and(eq(collaborations.userId, request.userId!), eq(collaborations.ideaId, ideaId)))
-        .limit(1);
-
-      if (alreadyCollaborating.length > 0) {
-        return reply.status(409).send({ error: "Already collaborating" });
-      }
-
       const isAdmin = idea[0].creatorId === request.userId;
 
-      await app.db.insert(collaborations).values({
-        userId: request.userId!,
-        ideaId,
-        isAdmin,
-      });
+      try {
+        await app.db.insert(collaborations).values({
+          userId: request.userId!,
+          ideaId,
+          isAdmin,
+        });
 
-      await app.db
-        .update(ideas)
-        .set({ collaboratorsCount: sql`${ideas.collaboratorsCount} + 1` })
-        .where(eq(ideas.id, ideaId));
+        await app.db
+          .update(ideas)
+          .set({ collaboratorsCount: sql`${ideas.collaboratorsCount} + 1` })
+          .where(eq(ideas.id, ideaId));
+      } catch (err: unknown) {
+        // Handle unique constraint violation (Postgres error 23505)
+        if (err && typeof err === "object" && "code" in err && err.code === "23505") {
+          return reply.status(409).send({ error: "Already collaborating" });
+        }
+        throw err;
+      }
 
       return { success: true };
     }
