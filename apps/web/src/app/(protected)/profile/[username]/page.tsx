@@ -104,12 +104,19 @@ export default function ProfilePage() {
         <div className="flex-1 text-center sm:text-left">
           <div className="flex items-center justify-center gap-3 sm:justify-start">
             <h1 className="text-xl font-bold">{profile.username}</h1>
-            {isOwnProfile && (
+            {isOwnProfile ? (
               <Link
                 href="/profile/edit"
                 className="rounded-md border border-gray-300 px-3 py-1 text-xs text-gray-600 hover:bg-gray-50"
               >
                 Edit Profile
+              </Link>
+            ) : (
+              <Link
+                href={`/messages/new?to=${profile.id}&username=${encodeURIComponent(profile.username)}`}
+                className="rounded-md bg-addis-orange px-3 py-1 text-xs text-white hover:bg-addis-orange/90"
+              >
+                Message
               </Link>
             )}
           </div>

@@ -1,18 +1,15 @@
 import type { FastifyPluginAsync } from "fastify";
-import { eq, and, or, sql } from "drizzle-orm";
+import { eq, and, desc, ne } from "drizzle-orm";
 import { messages, messageThreads, threadParticipants, users } from "@addis/db";
 import { messageSchema, paginationSchema } from "@addis/shared";
 import { requireAuth } from "../plugins/auth.js";
 
 export const messagesRoutes: FastifyPluginAsync = async (app) => {
-  // GET /api/messages/threads — list user's private message threads
+  // GET /api/messages/threads — list user's private message threads with participant info
   app.get("/threads", { preHandler: [requireAuth] }, async (request) => {
-    const threads = await app.db
-      .select({
-        threadId: threadParticipants.threadId,
-        messageType: messageThreads.messageType,
-        createdAt: messageThreads.createdAt,
-      })
+    // Get thread IDs the user participates in
+    const userThreads = await app.db
+      .select({ threadId: threadParticipants.threadId })
       .from(threadParticipants)
       .innerJoin(messageThreads, eq(threadParticipants.threadId, messageThreads.id))
       .where(
@@ -20,13 +17,67 @@ export const messagesRoutes: FastifyPluginAsync = async (app) => {
           eq(threadParticipants.userId, request.userId!),
           eq(messageThreads.messageType, "private")
         )
-      )
-      .orderBy(sql`${messageThreads.createdAt} desc`);
+      );
+
+    if (userThreads.length === 0) {
+      return { threads: [] };
+    }
+
+    const threadIds = userThreads.map((t) => t.threadId);
+
+    // For each thread, get the other participant and the latest message
+    const threads = await Promise.all(
+      threadIds.map(async (threadId) => {
+        const [otherParticipant, latestMessage] = await Promise.all([
+          // Get other participant info
+          app.db
+            .select({
+              userId: users.id,
+              username: users.username,
+              profileImageUrl: users.profileImageUrl,
+            })
+            .from(threadParticipants)
+            .innerJoin(users, eq(threadParticipants.userId, users.id))
+            .where(
+              and(
+                eq(threadParticipants.threadId, threadId),
+                ne(threadParticipants.userId, request.userId!)
+              )
+            )
+            .limit(1),
+          // Get latest message
+          app.db
+            .select({
+              content: messages.content,
+              createdAt: messages.createdAt,
+              senderUsername: users.username,
+            })
+            .from(messages)
+            .innerJoin(users, eq(messages.userId, users.id))
+            .where(eq(messages.threadId, threadId))
+            .orderBy(desc(messages.createdAt))
+            .limit(1),
+        ]);
+
+        return {
+          threadId,
+          participant: otherParticipant[0] ?? null,
+          lastMessage: latestMessage[0] ?? null,
+        };
+      })
+    );
+
+    // Sort by latest message timestamp (most recent first), threads without messages last
+    threads.sort((a, b) => {
+      const aTime = a.lastMessage?.createdAt ? new Date(a.lastMessage.createdAt).getTime() : 0;
+      const bTime = b.lastMessage?.createdAt ? new Date(b.lastMessage.createdAt).getTime() : 0;
+      return bTime - aTime;
+    });
 
     return { threads };
   });
 
-  // GET /api/messages/threads/:threadId
+  // GET /api/messages/threads/:threadId — get messages in a thread
   app.get<{ Params: { threadId: string }; Querystring: Record<string, string> }>(
     "/threads/:threadId",
     { preHandler: [requireAuth] },
@@ -51,6 +102,23 @@ export const messagesRoutes: FastifyPluginAsync = async (app) => {
         return reply.status(403).send({ error: "Not authorized to view this thread" });
       }
 
+      // Get other participant info
+      const otherParticipant = await app.db
+        .select({
+          userId: users.id,
+          username: users.username,
+          profileImageUrl: users.profileImageUrl,
+        })
+        .from(threadParticipants)
+        .innerJoin(users, eq(threadParticipants.userId, users.id))
+        .where(
+          and(
+            eq(threadParticipants.threadId, threadId),
+            ne(threadParticipants.userId, request.userId!)
+          )
+        )
+        .limit(1);
+
       const threadMessages = await app.db
         .select({
           id: messages.id,
@@ -63,11 +131,14 @@ export const messagesRoutes: FastifyPluginAsync = async (app) => {
         .from(messages)
         .innerJoin(users, eq(messages.userId, users.id))
         .where(eq(messages.threadId, threadId))
-        .orderBy(sql`${messages.createdAt} desc`)
+        .orderBy(desc(messages.createdAt))
         .limit(pagination.limit)
         .offset(pagination.offset);
 
-      return { messages: threadMessages };
+      return {
+        messages: threadMessages,
+        participant: otherParticipant[0] ?? null,
+      };
     }
   );
 
@@ -79,12 +150,28 @@ export const messagesRoutes: FastifyPluginAsync = async (app) => {
       const recipientId = parseInt(request.params.recipientId, 10);
       if (isNaN(recipientId)) return reply.status(400).send({ error: "Invalid recipient ID" });
 
+      // Prevent self-messaging
+      if (recipientId === request.userId) {
+        return reply.status(400).send({ error: "Cannot send a message to yourself" });
+      }
+
+      // Verify recipient exists
+      const recipient = await app.db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.id, recipientId))
+        .limit(1);
+
+      if (recipient.length === 0) {
+        return reply.status(404).send({ error: "Recipient not found" });
+      }
+
       const parsed = messageSchema.safeParse(request.body);
       if (!parsed.success) {
         return reply.status(400).send({ error: parsed.error.flatten().fieldErrors });
       }
 
-      // Find existing thread between these two users
+      // Find existing private thread between these two users
       const existingThread = await app.db
         .select({ threadId: threadParticipants.threadId })
         .from(threadParticipants)
@@ -96,12 +183,22 @@ export const messagesRoutes: FastifyPluginAsync = async (app) => {
             .where(eq(threadParticipants.userId, recipientId))
         );
 
-      let threadId: number;
+      // Filter to only private threads (not collaboration/comment threads)
+      let threadId: number | null = null;
+      for (const t of existingThread) {
+        const thread = await app.db
+          .select({ messageType: messageThreads.messageType })
+          .from(messageThreads)
+          .where(eq(messageThreads.id, t.threadId))
+          .limit(1);
+        if (thread[0]?.messageType === "private") {
+          threadId = t.threadId;
+          break;
+        }
+      }
 
-      if (existingThread.length > 0) {
-        threadId = existingThread[0].threadId;
-      } else {
-        // Create new thread
+      if (!threadId) {
+        // Create new private thread
         const [newThread] = await app.db
           .insert(messageThreads)
           .values({ messageType: "private" })
@@ -109,7 +206,6 @@ export const messagesRoutes: FastifyPluginAsync = async (app) => {
 
         threadId = newThread.id;
 
-        // Add both users as participants
         await app.db.insert(threadParticipants).values([
           { threadId, userId: request.userId! },
           { threadId, userId: recipientId },
@@ -129,7 +225,7 @@ export const messagesRoutes: FastifyPluginAsync = async (app) => {
     }
   );
 
-  // DELETE /api/messages/:messageId
+  // DELETE /api/messages/:messageId — delete own message
   app.delete<{ Params: { messageId: string } }>(
     "/:messageId",
     { preHandler: [requireAuth] },
@@ -137,7 +233,6 @@ export const messagesRoutes: FastifyPluginAsync = async (app) => {
       const messageId = parseInt(request.params.messageId, 10);
       if (isNaN(messageId)) return reply.status(400).send({ error: "Invalid message ID" });
 
-      // Verify ownership
       const msg = await app.db
         .select({ userId: messages.userId })
         .from(messages)
