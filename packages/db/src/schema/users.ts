@@ -1,6 +1,7 @@
 import {
   pgTable,
   serial,
+  integer,
   varchar,
   text,
   timestamp,
@@ -30,7 +31,7 @@ export const users = pgTable("users", {
 
 export const sessions = pgTable("sessions", {
   id: text("id").primaryKey(),
-  userId: serial("user_id")
+  userId: integer("user_id")
     .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
   expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
@@ -38,7 +39,7 @@ export const sessions = pgTable("sessions", {
 
 export const userTopics = pgTable("user_topics", {
   id: serial("id").primaryKey(),
-  userId: serial("user_id")
+  userId: integer("user_id")
     .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
   topicName: varchar("topic_name", { length: 255 }).notNull(),
@@ -46,10 +47,10 @@ export const userTopics = pgTable("user_topics", {
 
 export const profileViews = pgTable("profile_views", {
   id: serial("id").primaryKey(),
-  viewerId: serial("viewer_id")
+  viewerId: integer("viewer_id")
     .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
-  viewedId: serial("viewed_id")
+  viewedId: integer("viewed_id")
     .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
@@ -57,10 +58,10 @@ export const profileViews = pgTable("profile_views", {
 
 export const referrals = pgTable("referrals", {
   id: serial("id").primaryKey(),
-  referringId: serial("referring_id")
+  referringId: integer("referring_id")
     .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
-  referredId: serial("referred_id")
+  referredId: integer("referred_id")
     .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),

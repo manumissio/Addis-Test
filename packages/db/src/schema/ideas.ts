@@ -6,6 +6,7 @@ import {
   integer,
   timestamp,
   boolean,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { users } from "./users.js";
 
@@ -36,7 +37,9 @@ export const ideaLikes = pgTable("idea_likes", {
     .references(() => ideas.id, { onDelete: "cascade" })
     .notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-});
+}, (t) => ({
+  unqLike: uniqueIndex("unique_user_idea_like").on(t.userId, t.ideaId),
+}));
 
 export const ideaTopics = pgTable("idea_topics", {
   id: serial("id").primaryKey(),
@@ -64,7 +67,9 @@ export const collaborations = pgTable("collaborations", {
     .notNull(),
   isAdmin: boolean("is_admin").default(false).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-});
+}, (t) => ({
+  unqCollab: uniqueIndex("unique_user_idea_collab").on(t.userId, t.ideaId),
+}));
 
 export const ideaViews = pgTable("idea_views", {
   id: serial("id").primaryKey(),

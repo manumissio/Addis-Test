@@ -231,10 +231,13 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
     "/topics/:topicName",
     { preHandler: [requireAuth] },
     async (request, reply) => {
+      // Decode URL-encoded topic name
+      const topicName = decodeURIComponent(request.params.topicName);
+
       await app.db
         .delete(userTopics)
         .where(
-          sql`${userTopics.userId} = ${request.userId!} and ${userTopics.topicName} = ${request.params.topicName}`
+          sql`${userTopics.userId} = ${request.userId!} and ${userTopics.topicName} = ${topicName}`
         );
 
       return { success: true };
