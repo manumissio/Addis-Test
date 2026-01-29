@@ -132,33 +132,40 @@ export default function DiscoverPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-bold text-gray-900">Discover Ideas</h1>
+      {/* Hero header */}
+      <div className="rounded-xl bg-gradient-to-r from-addis-dark to-addis-blue px-6 py-10 text-center text-white">
+        <h1 className="text-3xl font-bold">Discover Ideas</h1>
+        <p className="mt-2 text-white/80">Find ideas that inspire you or match your interests</p>
 
-      {/* Search form */}
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-          placeholder="Search by title or description..."
-          className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-addis-orange focus:outline-none focus:ring-1 focus:ring-addis-orange"
-        />
-        <input
-          type="text"
-          value={topic}
-          onChange={(e) => setTopic(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-          placeholder="Filter by topic..."
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-addis-orange focus:outline-none focus:ring-1 focus:ring-addis-orange sm:w-48"
-        />
-        <button
-          onClick={handleSearch}
-          disabled={loading}
-          className="rounded-md bg-addis-orange px-6 py-2 text-sm font-medium text-white hover:bg-addis-orange/90 disabled:opacity-50"
-        >
-          {loading ? "Searching..." : "Search"}
-        </button>
+        {/* Search form - grouped controls */}
+        <div className="mx-auto mt-8 flex w-full max-w-xl items-stretch overflow-hidden rounded-lg shadow-sm">
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            placeholder="Search ideas..."
+            className="flex-1 border-0 px-4 py-3 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-addis-orange"
+          />
+          <input
+            type="text"
+            value={topic}
+            onChange={(e) => setTopic(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            placeholder="Topic..."
+            className="w-32 border-l border-gray-200 px-3 py-3 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-addis-orange sm:w-40"
+          />
+          <button
+            onClick={handleSearch}
+            disabled={loading}
+            className="bg-addis-orange px-6 py-3 text-sm font-semibold text-white hover:bg-addis-orange/90 disabled:opacity-50"
+          >
+            {loading ? "..." : "Search"}
+          </button>
+        </div>
+        <p className="mt-3 text-sm text-white/70">
+          Try searching for <span className="text-white">&quot;community&quot;</span> or <span className="text-white">&quot;sustainability&quot;</span>
+        </p>
       </div>
 
       {/* Active filters */}

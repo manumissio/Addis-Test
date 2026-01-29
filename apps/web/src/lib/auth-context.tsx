@@ -13,6 +13,7 @@ import { api, ApiError } from "./api";
 type User = {
   id: number;
   username: string;
+  profileImageUrl: string | null;
 };
 
 type AuthContext = {
