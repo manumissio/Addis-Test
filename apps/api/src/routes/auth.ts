@@ -37,9 +37,16 @@ const authRateLimit = {
   timeWindow: "1 minute",
 };
 
+// Response types
+type AuthUser = {
+  id: number;
+  username: string;
+  profileImageUrl: string | null;
+};
+
 export const authRoutes: FastifyPluginAsync = async (app) => {
   // POST /api/auth/register
-  app.post("/register", { config: { rateLimit: authRateLimit } }, async (request, reply) => {
+  app.post("/register", { config: { rateLimit: authRateLimit } }, async (request, reply): Promise<{ user: AuthUser } | void> => {
     const parsed = registerSchema.safeParse(request.body);
     if (!parsed.success) {
       return reply.status(400).send({ error: parsed.error.flatten().fieldErrors });
@@ -107,7 +114,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
   });
 
   // POST /api/auth/login
-  app.post("/login", { config: { rateLimit: authRateLimit } }, async (request, reply) => {
+  app.post("/login", { config: { rateLimit: authRateLimit } }, async (request, reply): Promise<{ user: AuthUser } | void> => {
     const parsed = loginSchema.safeParse(request.body);
     if (!parsed.success) {
       return reply.status(400).send({ error: "Invalid credentials" });
@@ -167,7 +174,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
   });
 
   // POST /api/auth/logout
-  app.post("/logout", async (request, reply) => {
+  app.post("/logout", async (request, reply): Promise<{ success: boolean }> => {
     const sessionId = request.cookies.session;
     if (sessionId) {
       await app.db.delete(sessions).where(eq(sessions.id, sessionId));
@@ -178,7 +185,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
   });
 
   // GET /api/auth/me
-  app.get("/me", async (request, reply) => {
+  app.get("/me", async (request, reply): Promise<{ user: AuthUser } | void> => {
     if (!request.user) {
       return reply.status(401).send({ error: "Not authenticated" });
     }
@@ -186,7 +193,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
   });
 
   // POST /api/auth/password-reset/request
-  app.post("/password-reset/request", { config: { rateLimit: authRateLimit } }, async (request, reply) => {
+  app.post("/password-reset/request", { config: { rateLimit: authRateLimit } }, async (request, reply): Promise<{ message?: string; success?: boolean } | void> => {
     const parsed = passwordResetRequestSchema.safeParse(request.body);
     if (!parsed.success) {
       return reply.status(400).send({ error: parsed.error.flatten().fieldErrors });

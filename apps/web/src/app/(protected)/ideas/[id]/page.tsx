@@ -55,6 +55,8 @@ export default function IdeaDetailPage() {
   const [collaborating, setCollaborating] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isLiking, setIsLiking] = useState(false);
+  const [isCollaborating, setIsCollaborating] = useState(false);
 
   // Comment form
   const [commentText, setCommentText] = useState("");
@@ -98,6 +100,7 @@ export default function IdeaDetailPage() {
   }, [loadIdea]);
 
   async function handleLike() {
+    setIsLiking(true);
     try {
       if (liked) {
         await api(`/api/ideas/${ideaId}/like`, { method: "DELETE" });
@@ -124,10 +127,13 @@ export default function IdeaDetailPage() {
         setLiked(fresh.isLiked);
         setCollaborating(fresh.isCollaborating);
       }
+    } finally {
+      setIsLiking(false);
     }
   }
 
   async function handleCollaborate() {
+    setIsCollaborating(true);
     try {
       if (collaborating) {
         await api(`/api/ideas/${ideaId}/collaborate`, { method: "DELETE" });
@@ -168,6 +174,8 @@ export default function IdeaDetailPage() {
         setCollaborating(fresh.isCollaborating);
         setCollaborators(collabData.collaborators);
       }
+    } finally {
+      setIsCollaborating(false);
     }
   }
 
@@ -352,40 +360,22 @@ export default function IdeaDetailPage() {
       <div className="flex flex-wrap items-center gap-4 border-y py-3">
         <button
           onClick={handleLike}
-          className={`flex items-center gap-1.5 text-sm ${
+          disabled={isLiking}
+          className={`flex items-center gap-1.5 text-sm transition-opacity ${
             liked
               ? "font-medium text-addis-orange"
               : "text-gray-500 hover:text-addis-orange"
-          }`}
+          } ${isLiking ? "opacity-50 cursor-not-allowed" : ""}`}
         >
-          <svg
-            className="h-5 w-5"
-            fill={liked ? "currentColor" : "none"}
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-            />
-          </svg>
-          {idea.likesCount} {idea.likesCount === 1 ? "like" : "likes"}
-        </button>
-
-        {!isOwner && (
-          <button
-            onClick={handleCollaborate}
-            className={`flex items-center gap-1.5 text-sm ${
-              collaborating
-                ? "font-medium text-addis-green"
-                : "text-gray-500 hover:text-addis-green"
-            }`}
-          >
+          {isLiking ? (
+            <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+            </svg>
+          ) : (
             <svg
               className="h-5 w-5"
-              fill={collaborating ? "currentColor" : "none"}
+              fill={liked ? "currentColor" : "none"}
               viewBox="0 0 24 24"
               stroke="currentColor"
               strokeWidth={2}
@@ -393,9 +383,43 @@ export default function IdeaDetailPage() {
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
+                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
               />
             </svg>
+          )}
+          {idea.likesCount} {idea.likesCount === 1 ? "like" : "likes"}
+        </button>
+
+        {!isOwner && (
+          <button
+            onClick={handleCollaborate}
+            disabled={isCollaborating}
+            className={`flex items-center gap-1.5 text-sm transition-opacity ${
+              collaborating
+                ? "font-medium text-addis-green"
+                : "text-gray-500 hover:text-addis-green"
+            } ${isCollaborating ? "opacity-50 cursor-not-allowed" : ""}`}
+          >
+            {isCollaborating ? (
+              <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+            ) : (
+              <svg
+                className="h-5 w-5"
+                fill={collaborating ? "currentColor" : "none"}
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+            )}
             {collaborating ? "Leave" : "Collaborate"}
           </button>
         )}

@@ -24,7 +24,9 @@ export async function buildApp() {
   });
 
   // Security
-  await app.register(helmet);
+  await app.register(helmet, {
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  });
   await app.register(cors, {
     origin: env.CORS_ORIGIN,
     credentials: true,

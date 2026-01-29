@@ -6,6 +6,7 @@ import { join, resolve, sep } from "node:path";
 import { users, ideas } from "@addis/db";
 import { requireAuth } from "../plugins/auth.js";
 import { requireIdeaOwnership } from "../utils/ownership.js";
+import { validateId } from "../middleware/validateId.js";
 
 // Validate image by reading magic bytes, not trusting client MIME type
 const MAGIC_BYTES: Record<string, Buffer> = {
@@ -102,12 +103,9 @@ export const uploadsRoutes: FastifyPluginAsync = async (app) => {
   // POST /api/uploads/idea-image/:ideaId
   app.post<{ Params: { ideaId: string } }>(
     "/idea-image/:ideaId",
-    { preHandler: [requireAuth] },
+    { preHandler: [requireAuth, validateId("ideaId")] },
     async (request, reply) => {
-      const ideaId = parseInt(request.params.ideaId, 10);
-      if (isNaN(ideaId)) {
-        return reply.status(400).send({ error: "Invalid idea ID" });
-      }
+      const ideaId = (request as any).ideaId as number;
 
       // Verify ownership and get current image URL
       const idea = await requireIdeaOwnership<{ creatorId: number; imageUrl: string | null }>(

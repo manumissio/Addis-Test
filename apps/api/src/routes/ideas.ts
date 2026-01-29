@@ -15,10 +15,52 @@ import { createIdeaSchema, updateIdeaSchema, paginationSchema, messageSchema, to
 import { requireAuth } from "../plugins/auth.js";
 import { requireIdeaOwnership } from "../utils/ownership.js";
 import { handleUniqueViolation } from "../utils/errors.js";
+import { validateIdeaId } from "../middleware/validateId.js";
+
+// Response types
+type IdeaFeedItem = {
+  id: number;
+  title: string;
+  description: string;
+  imageUrl: string | null;
+  locationCity: string | null;
+  locationState: string | null;
+  locationCountry: string | null;
+  likesCount: number;
+  viewsCount: number;
+  collaboratorsCount: number;
+  commentsCount: number;
+  createdAt: Date;
+  creatorUsername: string;
+  creatorImageUrl: string | null;
+};
+
+type IdeaDetail = IdeaFeedItem & {
+  creatorId: number;
+};
+
+type Topic = { topicName: string };
+type Stakeholder = { stakeholder: string };
+type Comment = {
+  id: number;
+  content: string;
+  createdAt: Date;
+  username: string;
+  profileImageUrl: string | null;
+};
+type Collaborator = {
+  userId: number;
+  isAdmin: boolean;
+  joinedAt: Date;
+  username: string;
+  profileImageUrl: string | null;
+};
 
 export const ideasRoutes: FastifyPluginAsync = async (app) => {
   // GET /api/ideas — feed
-  app.get<{ Querystring: Record<string, string> }>("/", async (request) => {
+  app.get<{ Querystring: Record<string, string> }>(
+    "/",
+    async (request): Promise<{ ideas: IdeaFeedItem[]; likedIdeaIds: number[] }> => {
     const pagination = paginationSchema.parse(request.query);
 
     const feed = await app.db
@@ -58,11 +100,11 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
   });
 
   // GET /api/ideas/:id
-  app.get<{ Params: { id: string } }>("/:id", async (request, reply) => {
-    const ideaId = parseInt(request.params.id, 10);
-    if (isNaN(ideaId)) {
-      return reply.status(400).send({ error: "Invalid idea ID" });
-    }
+  app.get<{ Params: { id: string } }>(
+    "/:id",
+    { preHandler: [validateIdeaId] },
+    async (request, reply): Promise<{ idea: IdeaDetail; topics: Topic[]; addressedTo: Stakeholder[]; isLiked: boolean; isCollaborating: boolean } | void> => {
+      const ideaId = (request as any).ideaId as number;
 
     const result = await app.db
       .select({
@@ -134,7 +176,7 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
   });
 
   // POST /api/ideas
-  app.post("/", { preHandler: [requireAuth] }, async (request, reply) => {
+  app.post("/", { preHandler: [requireAuth] }, async (request, reply): Promise<void> => {
     const parsed = createIdeaSchema.safeParse(request.body);
     if (!parsed.success) {
       return reply.status(400).send({ error: parsed.error.flatten().fieldErrors });
@@ -171,12 +213,9 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
   // PATCH /api/ideas/:id
   app.patch<{ Params: { id: string } }>(
     "/:id",
-    { preHandler: [requireAuth] },
-    async (request, reply) => {
-      const ideaId = parseInt(request.params.id, 10);
-      if (isNaN(ideaId)) {
-        return reply.status(400).send({ error: "Invalid idea ID" });
-      }
+    { preHandler: [requireAuth, validateIdeaId] },
+    async (request, reply): Promise<{ success: boolean } | void> => {
+      const ideaId = (request as any).ideaId as number;
 
       // Verify ownership
       await requireIdeaOwnership(app.db, reply, ideaId, request.userId!);
@@ -194,12 +233,9 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
   // DELETE /api/ideas/:id
   app.delete<{ Params: { id: string } }>(
     "/:id",
-    { preHandler: [requireAuth] },
-    async (request, reply) => {
-      const ideaId = parseInt(request.params.id, 10);
-      if (isNaN(ideaId)) {
-        return reply.status(400).send({ error: "Invalid idea ID" });
-      }
+    { preHandler: [requireAuth, validateIdeaId] },
+    async (request, reply): Promise<{ success: boolean } | void> => {
+      const ideaId = (request as any).ideaId as number;
 
       // Verify ownership
       await requireIdeaOwnership(app.db, reply, ideaId, request.userId!);
@@ -213,10 +249,9 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
   // POST /api/ideas/:id/like
   app.post<{ Params: { id: string } }>(
     "/:id/like",
-    { preHandler: [requireAuth] },
-    async (request, reply) => {
-      const ideaId = parseInt(request.params.id, 10);
-      if (isNaN(ideaId)) return reply.status(400).send({ error: "Invalid idea ID" });
+    { preHandler: [requireAuth, validateIdeaId] },
+    async (request, reply): Promise<{ success: boolean } | void> => {
+      const ideaId = (request as any).ideaId as number;
 
       try {
         await app.db.insert(ideaLikes).values({ userId: request.userId!, ideaId });
@@ -235,10 +270,9 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
   // DELETE /api/ideas/:id/like
   app.delete<{ Params: { id: string } }>(
     "/:id/like",
-    { preHandler: [requireAuth] },
-    async (request, reply) => {
-      const ideaId = parseInt(request.params.id, 10);
-      if (isNaN(ideaId)) return reply.status(400).send({ error: "Invalid idea ID" });
+    { preHandler: [requireAuth, validateIdeaId] },
+    async (request, reply): Promise<{ success: boolean }> => {
+      const ideaId = (request as any).ideaId as number;
 
       const deleted = await app.db
         .delete(ideaLikes)
@@ -259,10 +293,9 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
   // POST /api/ideas/:id/collaborate
   app.post<{ Params: { id: string } }>(
     "/:id/collaborate",
-    { preHandler: [requireAuth] },
-    async (request, reply) => {
-      const ideaId = parseInt(request.params.id, 10);
-      if (isNaN(ideaId)) return reply.status(400).send({ error: "Invalid idea ID" });
+    { preHandler: [requireAuth, validateIdeaId] },
+    async (request, reply): Promise<{ success: boolean } | void> => {
+      const ideaId = (request as any).ideaId as number;
 
       const idea = await app.db
         .select({ creatorId: ideas.creatorId })
@@ -296,10 +329,9 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
   // DELETE /api/ideas/:id/collaborate
   app.delete<{ Params: { id: string } }>(
     "/:id/collaborate",
-    { preHandler: [requireAuth] },
-    async (request, reply) => {
-      const ideaId = parseInt(request.params.id, 10);
-      if (isNaN(ideaId)) return reply.status(400).send({ error: "Invalid idea ID" });
+    { preHandler: [requireAuth, validateIdeaId] },
+    async (request, reply): Promise<{ success: boolean }> => {
+      const ideaId = (request as any).ideaId as number;
 
       const deleted = await app.db
         .delete(collaborations)
@@ -320,9 +352,9 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
   // GET /api/ideas/:id/comments
   app.get<{ Params: { id: string }; Querystring: Record<string, string> }>(
     "/:id/comments",
-    async (request, reply) => {
-      const ideaId = parseInt(request.params.id, 10);
-      if (isNaN(ideaId)) return reply.status(400).send({ error: "Invalid idea ID" });
+    { preHandler: [validateIdeaId] },
+    async (request, reply): Promise<{ comments: Comment[] }> => {
+      const ideaId = (request as any).ideaId as number;
       const pagination = paginationSchema.parse(request.query);
 
       const thread = await app.db
@@ -359,10 +391,9 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
   // POST /api/ideas/:id/comments
   app.post<{ Params: { id: string } }>(
     "/:id/comments",
-    { preHandler: [requireAuth] },
-    async (request, reply) => {
-      const ideaId = parseInt(request.params.id, 10);
-      if (isNaN(ideaId)) return reply.status(400).send({ error: "Invalid idea ID" });
+    { preHandler: [requireAuth, validateIdeaId] },
+    async (request, reply): Promise<void> => {
+      const ideaId = (request as any).ideaId as number;
 
       const parsed = messageSchema.safeParse(request.body);
       if (!parsed.success) {
@@ -402,10 +433,9 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
   // POST /api/ideas/:id/topics
   app.post<{ Params: { id: string } }>(
     "/:id/topics",
-    { preHandler: [requireAuth] },
-    async (request, reply) => {
-      const ideaId = parseInt(request.params.id, 10);
-      if (isNaN(ideaId)) return reply.status(400).send({ error: "Invalid idea ID" });
+    { preHandler: [requireAuth, validateIdeaId] },
+    async (request, reply): Promise<{ success: boolean } | void> => {
+      const ideaId = (request as any).ideaId as number;
 
       // Verify ownership
       await requireIdeaOwnership(app.db, reply, ideaId, request.userId!);
@@ -435,10 +465,9 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
   // DELETE /api/ideas/:id/topics/:topicName
   app.delete<{ Params: { id: string; topicName: string } }>(
     "/:id/topics/:topicName",
-    { preHandler: [requireAuth] },
-    async (request, reply) => {
-      const ideaId = parseInt(request.params.id, 10);
-      if (isNaN(ideaId)) return reply.status(400).send({ error: "Invalid idea ID" });
+    { preHandler: [requireAuth, validateIdeaId] },
+    async (request, reply): Promise<{ success: boolean } | void> => {
+      const ideaId = (request as any).ideaId as number;
 
       // Verify ownership
       await requireIdeaOwnership(app.db, reply, ideaId, request.userId!);
@@ -455,10 +484,9 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
   // POST /api/ideas/:id/addressed-to
   app.post<{ Params: { id: string } }>(
     "/:id/addressed-to",
-    { preHandler: [requireAuth] },
-    async (request, reply) => {
-      const ideaId = parseInt(request.params.id, 10);
-      if (isNaN(ideaId)) return reply.status(400).send({ error: "Invalid idea ID" });
+    { preHandler: [requireAuth, validateIdeaId] },
+    async (request, reply): Promise<{ success: boolean } | void> => {
+      const ideaId = (request as any).ideaId as number;
 
       // Verify ownership
       await requireIdeaOwnership(app.db, reply, ideaId, request.userId!);
@@ -490,10 +518,9 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
   // DELETE /api/ideas/:id/addressed-to/:stakeholder
   app.delete<{ Params: { id: string; stakeholder: string } }>(
     "/:id/addressed-to/:stakeholder",
-    { preHandler: [requireAuth] },
-    async (request, reply) => {
-      const ideaId = parseInt(request.params.id, 10);
-      if (isNaN(ideaId)) return reply.status(400).send({ error: "Invalid idea ID" });
+    { preHandler: [requireAuth, validateIdeaId] },
+    async (request, reply): Promise<{ success: boolean } | void> => {
+      const ideaId = (request as any).ideaId as number;
 
       // Verify ownership
       await requireIdeaOwnership(app.db, reply, ideaId, request.userId!);
@@ -512,9 +539,9 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
   // GET /api/ideas/:id/collaborators
   app.get<{ Params: { id: string } }>(
     "/:id/collaborators",
-    async (request, reply) => {
-      const ideaId = parseInt(request.params.id, 10);
-      if (isNaN(ideaId)) return reply.status(400).send({ error: "Invalid idea ID" });
+    { preHandler: [validateIdeaId] },
+    async (request, reply): Promise<{ collaborators: Collaborator[] }> => {
+      const ideaId = (request as any).ideaId as number;
 
       const collaboratorsList = await app.db
         .select({
