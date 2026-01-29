@@ -19,6 +19,21 @@ cd "$PROJECT_ROOT"
 # Check prerequisites
 echo -e "${YELLOW}Checking prerequisites...${NC}"
 
+# Check Node.js version (require 22+)
+if ! command -v node &> /dev/null; then
+    echo -e "${RED}Error: Node.js is not installed${NC}"
+    echo "Install Node.js 22+ using nvm: nvm install 22"
+    exit 1
+fi
+
+NODE_VERSION=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
+if [ "$NODE_VERSION" -lt 22 ]; then
+    echo -e "${RED}Error: Node.js 22+ is required (found v$NODE_VERSION)${NC}"
+    echo "Upgrade using nvm: nvm install 22 && nvm use 22"
+    exit 1
+fi
+echo "  Node.js: v$(node -v | cut -d'v' -f2) OK"
+
 if ! command -v pnpm &> /dev/null; then
     echo -e "${RED}Error: pnpm is not installed${NC}"
     echo "Install it with: npm install -g pnpm"
@@ -28,10 +43,18 @@ echo "  pnpm: OK"
 
 if ! command -v psql &> /dev/null; then
     echo -e "${RED}Error: PostgreSQL client (psql) is not installed${NC}"
-    echo "Install PostgreSQL first"
+    echo "Install PostgreSQL 16+: brew install postgresql@16"
     exit 1
 fi
-echo "  psql: OK"
+
+# Check PostgreSQL version (recommend 16+)
+PG_VERSION=$(psql --version | grep -oE '[0-9]+' | head -1)
+if [ "$PG_VERSION" -lt 16 ]; then
+    echo -e "${YELLOW}  PostgreSQL: v$PG_VERSION (v16+ recommended)${NC}"
+    echo -e "${YELLOW}  Consider upgrading: brew install postgresql@16${NC}"
+else
+    echo "  PostgreSQL: v$PG_VERSION OK"
+fi
 
 # Database configuration
 DB_NAME="${DB_NAME:-addisideas}"
