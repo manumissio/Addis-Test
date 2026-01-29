@@ -1,7 +1,7 @@
 import type { FastifyPluginAsync } from "fastify";
 import { eq, sql } from "drizzle-orm";
 import { users, ideas, profileViews, messages, userTopics, collaborations } from "@addis/db";
-import { updateProfileSchema, updateUsernameSchema, updateEmailSchema, paginationSchema } from "@addis/shared";
+import { updateProfileSchema, updateUsernameSchema, updateEmailSchema, paginationSchema, topicSchema } from "@addis/shared";
 import { requireAuth } from "../plugins/auth.js";
 
 export const usersRoutes: FastifyPluginAsync = async (app) => {
@@ -200,16 +200,12 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
 
   // POST /api/users/topics
   app.post("/topics", { preHandler: [requireAuth] }, async (request, reply) => {
-    const { topicName } = request.body as { topicName?: string };
+    const parsed = topicSchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.status(400).send({ error: parsed.error.flatten().fieldErrors });
+    }
 
-    // Validate and trim input
-    if (!topicName || typeof topicName !== "string") {
-      return reply.status(400).send({ error: "Topic name is required" });
-    }
-    const trimmed = topicName.trim();
-    if (trimmed.length === 0 || trimmed.length > 255) {
-      return reply.status(400).send({ error: "Invalid topic name" });
-    }
+    const trimmed = parsed.data.topicName.trim();
 
     // Check if already added (using trimmed value)
     const existing = await app.db

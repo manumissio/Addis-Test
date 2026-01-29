@@ -3,10 +3,41 @@ import { eq, and, desc, ne, inArray, sql } from "drizzle-orm";
 import { messages, messageThreads, threadParticipants, users } from "@addis/db";
 import { messageSchema, paginationSchema } from "@addis/shared";
 import { requireAuth } from "../plugins/auth.js";
+import { validateThreadId, validateRecipientId, validateMessageId } from "../middleware/validateId.js";
+
+// Response types
+type ThreadSummary = {
+  threadId: number;
+  participant: {
+    userId: number;
+    username: string;
+    profileImageUrl: string | null;
+  } | null;
+  lastMessage: {
+    content: string;
+    createdAt: Date;
+    senderUsername: string;
+  } | null;
+};
+
+type Message = {
+  id: number;
+  content: string;
+  createdAt: Date;
+  userId: number;
+  username: string;
+  profileImageUrl: string | null;
+};
+
+type ThreadParticipant = {
+  userId: number;
+  username: string;
+  profileImageUrl: string | null;
+};
 
 export const messagesRoutes: FastifyPluginAsync = async (app) => {
   // GET /api/messages/threads — list user's private message threads with participant info
-  app.get("/threads", { preHandler: [requireAuth] }, async (request) => {
+  app.get("/threads", { preHandler: [requireAuth] }, async (request): Promise<{ threads: ThreadSummary[] }> => {
     // Get thread IDs the user participates in
     const userThreads = await app.db
       .select({ threadId: threadParticipants.threadId })
@@ -83,10 +114,9 @@ export const messagesRoutes: FastifyPluginAsync = async (app) => {
   // GET /api/messages/threads/:threadId — get messages in a thread
   app.get<{ Params: { threadId: string }; Querystring: Record<string, string> }>(
     "/threads/:threadId",
-    { preHandler: [requireAuth] },
-    async (request, reply) => {
-      const threadId = parseInt(request.params.threadId, 10);
-      if (isNaN(threadId)) return reply.status(400).send({ error: "Invalid thread ID" });
+    { preHandler: [requireAuth, validateThreadId] },
+    async (request, reply): Promise<{ messages: Message[]; participant: ThreadParticipant | null } | void> => {
+      const threadId = (request as any).threadId as number;
       const pagination = paginationSchema.parse(request.query);
 
       // Verify user is a participant
@@ -148,10 +178,9 @@ export const messagesRoutes: FastifyPluginAsync = async (app) => {
   // POST /api/messages/send/:recipientId — send private message
   app.post<{ Params: { recipientId: string } }>(
     "/send/:recipientId",
-    { preHandler: [requireAuth] },
-    async (request, reply) => {
-      const recipientId = parseInt(request.params.recipientId, 10);
-      if (isNaN(recipientId)) return reply.status(400).send({ error: "Invalid recipient ID" });
+    { preHandler: [requireAuth, validateRecipientId] },
+    async (request, reply): Promise<void> => {
+      const recipientId = (request as any).recipientId as number;
 
       // Prevent self-messaging
       if (recipientId === request.userId) {
@@ -231,10 +260,9 @@ export const messagesRoutes: FastifyPluginAsync = async (app) => {
   // DELETE /api/messages/:messageId — delete own message
   app.delete<{ Params: { messageId: string } }>(
     "/:messageId",
-    { preHandler: [requireAuth] },
-    async (request, reply) => {
-      const messageId = parseInt(request.params.messageId, 10);
-      if (isNaN(messageId)) return reply.status(400).send({ error: "Invalid message ID" });
+    { preHandler: [requireAuth, validateMessageId] },
+    async (request, reply): Promise<{ success: boolean } | void> => {
+      const messageId = (request as any).messageId as number;
 
       const msg = await app.db
         .select({ userId: messages.userId })
