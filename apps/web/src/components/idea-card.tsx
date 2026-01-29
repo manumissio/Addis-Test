@@ -59,17 +59,11 @@ export function IdeaCard({ idea, liked, onLikeToggle }: IdeaCardProps) {
           className="flex items-center gap-2"
         >
           <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-gray-200">
-            {idea.creatorImageUrl ? (
-              <img
-                src={`${API_URL}${idea.creatorImageUrl}`}
-                alt={idea.creatorUsername}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-xs font-bold text-gray-400">
-                {idea.creatorUsername[0].toUpperCase()}
-              </div>
-            )}
+            <img
+              src={idea.creatorImageUrl ? `${API_URL}${idea.creatorImageUrl}` : "/images/default_user.jpg"}
+              alt={idea.creatorUsername}
+              className="h-full w-full object-cover"
+            />
           </div>
           <span className="text-sm font-medium text-gray-700 hover:text-addis-orange">
             {idea.creatorUsername}

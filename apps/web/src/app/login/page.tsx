@@ -37,8 +37,8 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold text-addis-orange">Addis Ideas</h1>
-          <p className="mt-2 text-sm text-gray-600">
+          <img src="/images/logo.png" alt="Addis Ideas" className="mx-auto h-16 w-auto" />
+          <p className="mt-4 text-sm text-gray-600">
             Login using your username and password.
           </p>
         </div>

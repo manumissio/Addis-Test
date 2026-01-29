@@ -66,17 +66,11 @@ export default function MessagesInboxPage() {
             >
               {/* Avatar */}
               <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-gray-200">
-                {thread.participant?.profileImageUrl ? (
-                  <img
-                    src={`${API_URL}${thread.participant.profileImageUrl}`}
-                    alt={thread.participant.username}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center text-sm font-bold text-gray-400">
-                    {thread.participant?.username?.[0]?.toUpperCase() ?? "?"}
-                  </div>
-                )}
+                <img
+                  src={thread.participant?.profileImageUrl ? `${API_URL}${thread.participant.profileImageUrl}` : "/images/default_user.jpg"}
+                  alt={thread.participant?.username ?? "User"}
+                  className="h-full w-full object-cover"
+                />
               </div>
 
               {/* Thread info */}
