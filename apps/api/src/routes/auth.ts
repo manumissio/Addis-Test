@@ -91,7 +91,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
     reply.setCookie("session", sessionId, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "lax",
       path: "/",
       expires: expiresAt,
     });
@@ -144,7 +144,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
     reply.setCookie("session", sessionId, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "lax",
       path: "/",
       expires: expiresAt,
     });

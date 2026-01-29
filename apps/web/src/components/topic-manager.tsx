@@ -56,6 +56,7 @@ export function TopicManager({
   }
 
   async function handleRemove(topicName: string) {
+    setError("");
     try {
       await api(deleteEndpoint(topicName), { method: "DELETE" });
       onUpdate();
