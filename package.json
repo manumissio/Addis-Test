@@ -1,6 +1,9 @@
 {
   "name": "addis-ideas",
   "private": true,
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",

@@ -25,33 +25,61 @@ export function Nav() {
           <Link href="/discover" className="text-gray-600 hover:text-gray-900">
             Discover
           </Link>
-          <Link
-            href={`/profile/${user.username}`}
-            className="text-gray-600 hover:text-gray-900"
-          >
-            Profile
-          </Link>
           <Link href="/messages" className="text-gray-600 hover:text-gray-900">
             Messages
           </Link>
-          <Link href="/settings" className="text-gray-600 hover:text-gray-900">
-            Settings
-          </Link>
+
+          {/* Primary CTA */}
           <Link
             href="/ideas/new"
-            className="rounded-md bg-addis-orange px-3 py-1.5 text-white hover:bg-addis-orange/90"
+            className="rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-gray-800"
           >
             New Idea
           </Link>
-          <span className="text-gray-400">
-            {user.username}
-          </span>
-          <button
-            onClick={logout}
-            className="rounded-md border border-gray-300 px-3 py-1.5 text-gray-600 hover:bg-gray-50"
-          >
-            Logout
-          </button>
+
+          {/* Divider */}
+          <div className="mx-1 h-6 w-px bg-gray-200" />
+
+          {/* User Identity Group */}
+          <div className="flex items-center gap-3">
+            <Link
+              href={`/profile/${user.username}`}
+              className="group flex items-center gap-2 rounded-full p-1 pr-3 transition-colors hover:bg-gray-50"
+            >
+              <div className="h-8 w-8 overflow-hidden rounded-full bg-gray-200 ring-1 ring-gray-200 transition-all group-hover:ring-gray-300">
+                {user.profileImageUrl ? (
+                  <img
+                    src={user.profileImageUrl}
+                    alt={user.username}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-gray-100 text-xs font-bold text-gray-500">
+                    {user.username.slice(0, 2).toUpperCase()}
+                  </div>
+                )}
+              </div>
+              <span className="text-sm font-medium leading-none text-gray-700 group-hover:text-gray-900">
+                {user.username}
+              </span>
+            </Link>
+
+            {/* Settings */}
+            <Link
+              href="/settings"
+              className="text-xs text-gray-400 transition-colors hover:text-gray-600"
+            >
+              Settings
+            </Link>
+
+            {/* Logout */}
+            <button
+              onClick={logout}
+              className="text-xs font-medium text-gray-400 transition-colors hover:text-red-600"
+            >
+              Log out
+            </button>
+          </div>
         </div>
 
         {/* Mobile toggle */}
@@ -74,6 +102,33 @@ export function Nav() {
       {menuOpen && (
         <div className="border-t px-4 py-3 sm:hidden">
           <div className="flex flex-col gap-3 text-sm">
+            {/* User info at top of mobile menu */}
+            <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+              <div className="h-10 w-10 overflow-hidden rounded-full bg-gray-200">
+                {user.profileImageUrl ? (
+                  <img
+                    src={user.profileImageUrl}
+                    alt={user.username}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-gray-100 text-sm font-bold text-gray-500">
+                    {user.username.slice(0, 2).toUpperCase()}
+                  </div>
+                )}
+              </div>
+              <div>
+                <div className="font-medium text-gray-900">{user.username}</div>
+                <Link
+                  href={`/profile/${user.username}`}
+                  onClick={() => setMenuOpen(false)}
+                  className="text-xs text-addis-orange"
+                >
+                  View profile
+                </Link>
+              </div>
+            </div>
+
             <Link
               href="/feed"
               onClick={() => setMenuOpen(false)}
@@ -96,13 +151,6 @@ export function Nav() {
               New Idea
             </Link>
             <Link
-              href={`/profile/${user.username}`}
-              onClick={() => setMenuOpen(false)}
-              className="text-gray-600 hover:text-gray-900"
-            >
-              Profile
-            </Link>
-            <Link
               href="/messages"
               onClick={() => setMenuOpen(false)}
               className="text-gray-600 hover:text-gray-900"
@@ -118,9 +166,9 @@ export function Nav() {
             </Link>
             <button
               onClick={() => { setMenuOpen(false); logout(); }}
-              className="text-left text-gray-600 hover:text-gray-900"
+              className="text-left text-red-600 hover:text-red-700"
             >
-              Logout
+              Log out
             </button>
           </div>
         </div>
