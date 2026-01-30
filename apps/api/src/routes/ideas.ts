@@ -16,6 +16,7 @@ import { requireAuth } from "../plugins/auth.js";
 import { requireIdeaOwnership } from "../utils/ownership.js";
 import { handleUniqueViolation } from "../utils/errors.js";
 import { validateIdeaId } from "../middleware/validateId.js";
+import { sanitizePlainText, sanitizeRichText } from "../utils/sanitize.js";
 
 // Response types
 type IdeaFeedItem = {
@@ -182,11 +183,18 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
       return reply.status(400).send({ error: parsed.error.flatten().fieldErrors });
     }
 
+    // Sanitize user input to prevent XSS
+    const sanitizedData = {
+      ...parsed.data,
+      title: sanitizePlainText(parsed.data.title),
+      description: sanitizeRichText(parsed.data.description),
+    };
+
     // Check title uniqueness
     const existing = await app.db
       .select({ id: ideas.id })
       .from(ideas)
-      .where(eq(ideas.title, parsed.data.title))
+      .where(eq(ideas.title, sanitizedData.title))
       .limit(1);
 
     if (existing.length > 0) {
@@ -196,7 +204,7 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
     const [newIdea] = await app.db
       .insert(ideas)
       .values({
-        ...parsed.data,
+        ...sanitizedData,
         creatorId: request.userId!,
       })
       .returning({ id: ideas.id, title: ideas.title });
@@ -225,7 +233,12 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
         return reply.status(400).send({ error: parsed.error.flatten().fieldErrors });
       }
 
-      await app.db.update(ideas).set(parsed.data).where(eq(ideas.id, ideaId));
+      // Sanitize user input to prevent XSS
+      const sanitizedData = { ...parsed.data };
+      if (parsed.data.title) sanitizedData.title = sanitizePlainText(parsed.data.title);
+      if (parsed.data.description) sanitizedData.description = sanitizeRichText(parsed.data.description);
+
+      await app.db.update(ideas).set(sanitizedData).where(eq(ideas.id, ideaId));
       return { success: true };
     }
   );
@@ -412,12 +425,15 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
         return reply.status(404).send({ error: "Comment thread not found" });
       }
 
+      // Sanitize comment content to prevent XSS
+      const sanitizedContent = sanitizeRichText(parsed.data.content);
+
       const [comment] = await app.db
         .insert(messages)
         .values({
           threadId: thread[0].id,
           userId: request.userId!,
-          content: parsed.data.content,
+          content: sanitizedContent,
         })
         .returning();
 
@@ -445,19 +461,20 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
         return reply.status(400).send({ error: parsed.error.flatten().fieldErrors });
       }
 
-      const trimmed = parsed.data.topicName.trim();
+      // Sanitize topic name to prevent XSS
+      const sanitizedTopic = sanitizePlainText(parsed.data.topicName);
 
       const existing = await app.db
         .select({ id: ideaTopics.id })
         .from(ideaTopics)
-        .where(and(eq(ideaTopics.ideaId, ideaId), eq(ideaTopics.topicName, trimmed)))
+        .where(and(eq(ideaTopics.ideaId, ideaId), eq(ideaTopics.topicName, sanitizedTopic)))
         .limit(1);
 
       if (existing.length > 0) {
         return reply.status(409).send({ error: "Topic already added" });
       }
 
-      await app.db.insert(ideaTopics).values({ ideaId, topicName: trimmed });
+      await app.db.insert(ideaTopics).values({ ideaId, topicName: sanitizedTopic });
       return { success: true };
     }
   );
@@ -496,13 +513,14 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
         return reply.status(400).send({ error: parsed.error.flatten().fieldErrors });
       }
 
-      const trimmed = parsed.data.stakeholder.trim();
+      // Sanitize stakeholder name to prevent XSS
+      const sanitizedStakeholder = sanitizePlainText(parsed.data.stakeholder);
 
       const existing = await app.db
         .select({ id: ideaAddressedTo.id })
         .from(ideaAddressedTo)
         .where(
-          and(eq(ideaAddressedTo.ideaId, ideaId), eq(ideaAddressedTo.stakeholder, trimmed))
+          and(eq(ideaAddressedTo.ideaId, ideaId), eq(ideaAddressedTo.stakeholder, sanitizedStakeholder))
         )
         .limit(1);
 
@@ -510,7 +528,7 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
         return reply.status(409).send({ error: "Stakeholder already added" });
       }
 
-      await app.db.insert(ideaAddressedTo).values({ ideaId, stakeholder: trimmed });
+      await app.db.insert(ideaAddressedTo).values({ ideaId, stakeholder: sanitizedStakeholder });
       return { success: true };
     }
   );

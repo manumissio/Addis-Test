@@ -3,6 +3,7 @@ import { eq, sql } from "drizzle-orm";
 import { users, ideas, profileViews, messages, userTopics, collaborations } from "@addis/db";
 import { updateProfileSchema, updateUsernameSchema, updateEmailSchema, paginationSchema, topicSchema } from "@addis/shared";
 import { requireAuth } from "../plugins/auth.js";
+import { sanitizePlainText, sanitizeRichText } from "../utils/sanitize.js";
 
 export const usersRoutes: FastifyPluginAsync = async (app) => {
   // GET /api/users/:username
@@ -140,9 +141,19 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
       return reply.status(400).send({ error: parsed.error.flatten().fieldErrors });
     }
 
+    // Sanitize user input to prevent XSS
+    const sanitizedData: any = {};
+    if (parsed.data.about !== undefined) sanitizedData.about = parsed.data.about ? sanitizeRichText(parsed.data.about) : null;
+    if (parsed.data.profession !== undefined) sanitizedData.profession = parsed.data.profession ? sanitizePlainText(parsed.data.profession) : null;
+    if (parsed.data.locationCity !== undefined) sanitizedData.locationCity = parsed.data.locationCity ? sanitizePlainText(parsed.data.locationCity) : null;
+    if (parsed.data.locationState !== undefined) sanitizedData.locationState = parsed.data.locationState ? sanitizePlainText(parsed.data.locationState) : null;
+    if (parsed.data.locationCountry !== undefined) sanitizedData.locationCountry = parsed.data.locationCountry ? sanitizePlainText(parsed.data.locationCountry) : null;
+    if (parsed.data.dob !== undefined) sanitizedData.dob = parsed.data.dob;
+    if (parsed.data.isPrivate !== undefined) sanitizedData.isPrivate = parsed.data.isPrivate;
+
     await app.db
       .update(users)
-      .set(parsed.data)
+      .set(sanitizedData)
       .where(eq(users.id, request.userId!));
 
     return { success: true };
@@ -155,10 +166,13 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
       return reply.status(400).send({ error: parsed.error.flatten().fieldErrors });
     }
 
+    // Sanitize username to prevent XSS
+    const sanitizedUsername = sanitizePlainText(parsed.data.username);
+
     const existing = await app.db
       .select({ id: users.id })
       .from(users)
-      .where(eq(users.username, parsed.data.username))
+      .where(eq(users.username, sanitizedUsername))
       .limit(1);
 
     if (existing.length > 0) {
@@ -167,7 +181,7 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
 
     await app.db
       .update(users)
-      .set({ username: parsed.data.username })
+      .set({ username: sanitizedUsername })
       .where(eq(users.id, request.userId!));
 
     return { success: true };
@@ -180,10 +194,13 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
       return reply.status(400).send({ error: parsed.error.flatten().fieldErrors });
     }
 
+    // Sanitize email to prevent XSS
+    const sanitizedEmail = sanitizePlainText(parsed.data.email);
+
     const existing = await app.db
       .select({ id: users.id })
       .from(users)
-      .where(eq(users.email, parsed.data.email))
+      .where(eq(users.email, sanitizedEmail))
       .limit(1);
 
     if (existing.length > 0) {
@@ -192,7 +209,7 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
 
     await app.db
       .update(users)
-      .set({ email: parsed.data.email })
+      .set({ email: sanitizedEmail })
       .where(eq(users.id, request.userId!));
 
     return { success: true };
@@ -205,14 +222,15 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
       return reply.status(400).send({ error: parsed.error.flatten().fieldErrors });
     }
 
-    const trimmed = parsed.data.topicName.trim();
+    // Sanitize topic name to prevent XSS
+    const sanitizedTopic = sanitizePlainText(parsed.data.topicName);
 
-    // Check if already added (using trimmed value)
+    // Check if already added (using sanitized value)
     const existing = await app.db
       .select({ id: userTopics.id })
       .from(userTopics)
       .where(
-        sql`${userTopics.userId} = ${request.userId!} and ${userTopics.topicName} = ${trimmed}`
+        sql`${userTopics.userId} = ${request.userId!} and ${userTopics.topicName} = ${sanitizedTopic}`
       )
       .limit(1);
 
@@ -222,7 +240,7 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
 
     await app.db.insert(userTopics).values({
       userId: request.userId!,
-      topicName: trimmed,
+      topicName: sanitizedTopic,
     });
 
     return { success: true };

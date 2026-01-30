@@ -5,6 +5,7 @@ import { promisify } from "node:util";
 import { users, sessions } from "@addis/db";
 import { registerSchema, loginSchema, updatePasswordSchema, passwordSchema, passwordResetRequestSchema, passwordResetConfirmSchema } from "@addis/shared";
 import { requireAuth } from "../plugins/auth.js";
+import { sanitizePlainText } from "../utils/sanitize.js";
 
 const scryptAsync = promisify(scrypt);
 
@@ -51,13 +52,21 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
     if (!parsed.success) {
       return reply.status(400).send({ error: parsed.error.flatten().fieldErrors });
     }
-    const { username, password, email, firstName, lastName } = parsed.data;
+
+    // Sanitize user input to prevent XSS
+    const sanitizedData = {
+      username: sanitizePlainText(parsed.data.username),
+      password: parsed.data.password, // Password will be hashed, no need to sanitize
+      email: sanitizePlainText(parsed.data.email),
+      firstName: parsed.data.firstName ? sanitizePlainText(parsed.data.firstName) : null,
+      lastName: parsed.data.lastName ? sanitizePlainText(parsed.data.lastName) : null,
+    };
 
     // Check if username or email already taken
     const existing = await app.db
       .select({ id: users.id })
       .from(users)
-      .where(eq(users.username, username))
+      .where(eq(users.username, sanitizedData.username))
       .limit(1);
 
     if (existing.length > 0) {
@@ -67,23 +76,23 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
     const existingEmail = await app.db
       .select({ id: users.id })
       .from(users)
-      .where(eq(users.email, email))
+      .where(eq(users.email, sanitizedData.email))
       .limit(1);
 
     if (existingEmail.length > 0) {
       return reply.status(409).send({ error: "Email already in use" });
     }
 
-    const passwordHash = await hashPassword(password);
+    const passwordHash = await hashPassword(sanitizedData.password);
 
     const [newUser] = await app.db
       .insert(users)
       .values({
-        username,
-        email,
+        username: sanitizedData.username,
+        email: sanitizedData.email,
         passwordHash,
-        firstName: firstName ?? null,
-        lastName: lastName ?? null,
+        firstName: sanitizedData.firstName,
+        lastName: sanitizedData.lastName,
       })
       .returning({ id: users.id, username: users.username });
 
