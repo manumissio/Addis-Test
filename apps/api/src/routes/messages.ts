@@ -4,6 +4,7 @@ import { messages, messageThreads, threadParticipants, users } from "@addis/db";
 import { messageSchema, paginationSchema } from "@addis/shared";
 import { requireAuth } from "../plugins/auth.js";
 import { validateThreadId, validateRecipientId, validateMessageId } from "../middleware/validateId.js";
+import { sanitizeRichText } from "../utils/sanitize.js";
 
 // Response types
 type ThreadSummary = {
@@ -203,6 +204,9 @@ export const messagesRoutes: FastifyPluginAsync = async (app) => {
         return reply.status(400).send({ error: parsed.error.flatten().fieldErrors });
       }
 
+      // Sanitize message content to prevent XSS
+      const sanitizedContent = sanitizeRichText(parsed.data.content);
+
       // Find existing private thread between these two users
       const existingThread = await app.db
         .select({ threadId: threadParticipants.threadId })
@@ -249,7 +253,7 @@ export const messagesRoutes: FastifyPluginAsync = async (app) => {
         .values({
           threadId,
           userId: request.userId!,
-          content: parsed.data.content,
+          content: sanitizedContent,
         })
         .returning();
 
