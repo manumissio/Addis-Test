@@ -6,17 +6,17 @@ import cookie from "@fastify/cookie";
 import multipart from "@fastify/multipart";
 import rateLimit from "@fastify/rate-limit";
 import fastifyStatic from "@fastify/static";
-import { env } from "./env.js";
-import dbPlugin from "./plugins/db.js";
-import authPlugin from "./plugins/auth.js";
-import { authRoutes } from "./routes/auth.js";
-import { usersRoutes } from "./routes/users.js";
-import { ideasRoutes } from "./routes/ideas.js";
-import { messagesRoutes } from "./routes/messages.js";
-import { uploadsRoutes } from "./routes/uploads.js";
-import { notificationsRoutes } from "./routes/notifications.js";
-import { sponsorshipsRoutes } from "./routes/sponsorships.js";
-import { errorHandler } from "./utils/errors.js";
+import { env } from "./env";
+import dbPlugin from "./plugins/db";
+import authPlugin from "./plugins/auth";
+import { authRoutes } from "./routes/auth";
+import { usersRoutes } from "./routes/users";
+import { ideasRoutes } from "./routes/ideas";
+import { messagesRoutes } from "./routes/messages";
+import { uploadsRoutes } from "./routes/uploads";
+import { notificationsRoutes } from "./routes/notifications";
+import { sponsorshipsRoutes } from "./routes/sponsorships";
+import { errorHandler } from "./utils/errors";
 
 export async function buildApp() {
   const app = Fastify({

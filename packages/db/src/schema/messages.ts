@@ -7,8 +7,8 @@ import {
   timestamp,
   index,
 } from "drizzle-orm/pg-core";
-import { users } from "./users.js";
-import { ideas } from "./ideas.js";
+import { users } from "./users";
+import { ideas } from "./ideas";
 
 export const messageTypeEnum = pgEnum("message_type", [
   "collaboration",

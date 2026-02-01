@@ -4,8 +4,8 @@ import { randomBytes, scrypt, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
 import { users, sessions } from "@addis/db";
 import { registerSchema, loginSchema, updatePasswordSchema, passwordSchema, passwordResetRequestSchema, passwordResetConfirmSchema } from "@addis/shared";
-import { requireAuth } from "../plugins/auth.js";
-import { sanitizePlainText } from "../utils/sanitize.js";
+import { requireAuth } from "../plugins/auth";
+import { sanitizePlainText } from "../utils/sanitize";
 
 const scryptAsync = promisify(scrypt);
 

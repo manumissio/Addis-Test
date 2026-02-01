@@ -4,9 +4,9 @@ import { randomBytes } from "node:crypto";
 import { mkdir, writeFile, unlink } from "node:fs/promises";
 import { join, resolve, sep } from "node:path";
 import { users, ideas } from "@addis/db";
-import { requireAuth } from "../plugins/auth.js";
-import { requireIdeaOwnership } from "../utils/ownership.js";
-import { validateId } from "../middleware/validateId.js";
+import { requireAuth } from "../plugins/auth";
+import { requireIdeaOwnership } from "../utils/ownership";
+import { validateId } from "../middleware/validateId";
 
 // Validate image by reading magic bytes, not trusting client MIME type
 const MAGIC_BYTES: Record<string, Buffer> = {

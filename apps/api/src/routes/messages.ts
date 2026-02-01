@@ -2,10 +2,10 @@ import type { FastifyPluginAsync } from "fastify";
 import { eq, and, desc, ne, inArray, sql } from "drizzle-orm";
 import { messages, messageThreads, threadParticipants, users } from "@addis/db";
 import { messageSchema, paginationSchema } from "@addis/shared";
-import { requireAuth } from "../plugins/auth.js";
-import { validateThreadId, validateRecipientId, validateMessageId } from "../middleware/validateId.js";
-import { sanitizeRichText } from "../utils/sanitize.js";
-import { createNotification } from "../utils/notifications.js";
+import { requireAuth } from "../plugins/auth";
+import { validateThreadId, validateRecipientId, validateMessageId } from "../middleware/validateId";
+import { sanitizeRichText } from "../utils/sanitize";
+import { createNotification } from "../utils/notifications";
 
 // Response types
 type ThreadSummary = {

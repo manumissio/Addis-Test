@@ -1,6 +1,6 @@
 import fp from "fastify-plugin";
 import { createDb, type Database } from "@addis/db";
-import { env } from "../env.js";
+import { env } from "../env";
 
 declare module "fastify" {
   interface FastifyInstance {

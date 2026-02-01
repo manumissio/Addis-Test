@@ -2,9 +2,9 @@ import type { FastifyPluginAsync } from "fastify";
 import { eq, sql } from "drizzle-orm";
 import { users, ideas, profileViews, messages, userTopics, collaborations } from "@addis/db";
 import { updateProfileSchema, updateUsernameSchema, updateEmailSchema, paginationSchema, topicSchema } from "@addis/shared";
-import { requireAuth } from "../plugins/auth.js";
-import { sanitizePlainText, sanitizeRichText } from "../utils/sanitize.js";
-import { createNotification } from "../utils/notifications.js";
+import { requireAuth } from "../plugins/auth";
+import { sanitizePlainText, sanitizeRichText } from "../utils/sanitize";
+import { createNotification } from "../utils/notifications";
 
 export const usersRoutes: FastifyPluginAsync = async (app) => {
   // GET /api/users/:username

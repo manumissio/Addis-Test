@@ -2,8 +2,8 @@ import type { FastifyPluginAsync } from "fastify";
 import { eq, and, desc } from "drizzle-orm";
 import { notifications, users } from "@addis/db";
 import { paginationSchema } from "@addis/shared";
-import { requireAuth } from "../plugins/auth.js";
-import { validateId } from "../middleware/validateId.js";
+import { requireAuth } from "../plugins/auth";
+import { validateId } from "../middleware/validateId";
 
 export const notificationsRoutes: FastifyPluginAsync = async (app) => {
   // GET /api/notifications

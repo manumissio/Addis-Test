@@ -2,10 +2,10 @@ import type { FastifyPluginAsync } from "fastify";
 import { eq, and, desc } from "drizzle-orm";
 import { ideaSponsorships, sponsorProfiles, ideas, users } from "@addis/db";
 import { applySponsorshipSchema, sponsorProfileSchema } from "@addis/shared";
-import { requireAuth } from "../plugins/auth.js";
-import { requireIdeaOwnership } from "../utils/ownership.js";
-import { validateId } from "../middleware/validateId.js";
-import { createNotification } from "../utils/notifications.js";
+import { requireAuth } from "../plugins/auth";
+import { requireIdeaOwnership } from "../utils/ownership";
+import { validateId } from "../middleware/validateId";
+import { createNotification } from "../utils/notifications";
 
 export const sponsorshipsRoutes: FastifyPluginAsync = async (app) => {
   // POST /api/sponsorships/profile - Create or update sponsor profile

@@ -8,8 +8,8 @@ import {
   varchar,
   index,
 } from "drizzle-orm/pg-core";
-import { users } from "./users.js";
-import { ideas } from "./ideas.js";
+import { users } from "./users";
+import { ideas } from "./ideas";
 
 export const sponsorshipStatusEnum = pgEnum("sponsorship_status", [
   "pending",

@@ -12,12 +12,12 @@ import {
   users,
 } from "@addis/db";
 import { createIdeaSchema, updateIdeaSchema, paginationSchema, messageSchema, topicSchema, stakeholderSchema } from "@addis/shared";
-import { requireAuth } from "../plugins/auth.js";
-import { requireIdeaOwnership } from "../utils/ownership.js";
-import { handleUniqueViolation } from "../utils/errors.js";
-import { validateIdeaId } from "../middleware/validateId.js";
-import { sanitizePlainText, sanitizeRichText } from "../utils/sanitize.js";
-import { createNotification } from "../utils/notifications.js";
+import { requireAuth } from "../plugins/auth";
+import { requireIdeaOwnership } from "../utils/ownership";
+import { handleUniqueViolation } from "../utils/errors";
+import { validateIdeaId } from "../middleware/validateId";
+import { sanitizePlainText, sanitizeRichText } from "../utils/sanitize";
+import { createNotification } from "../utils/notifications";
 
 // Response types
 type IdeaFeedItem = {

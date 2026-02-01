@@ -2,7 +2,7 @@ import type { FastifyReply } from "fastify";
 import type { Database } from "@addis/db";
 import { eq } from "drizzle-orm";
 import { ideas } from "@addis/db";
-import { NotFoundError, UnauthorizedError } from "./errors.js";
+import { NotFoundError, UnauthorizedError } from "./errors";
 
 /**
  * Verifies that a user owns a specific idea.
