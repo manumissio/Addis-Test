@@ -213,8 +213,6 @@ export default function DiscoverPage() {
               <IdeaCard
                 key={idea.id}
                 idea={idea}
-                liked={likedIds.has(idea.id)}
-                onLikeToggle={refreshResults}
               />
             ))}
           </div>

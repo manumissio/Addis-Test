@@ -130,8 +130,6 @@ export default function FeedPage() {
             <IdeaCard
               key={idea.id}
               idea={idea}
-              liked={likedIds.has(idea.id)}
-              onLikeToggle={refreshFeed}
             />
           ))}
         </div>
