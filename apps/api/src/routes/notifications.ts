@@ -35,15 +35,12 @@ export const notificationsRoutes: FastifyPluginAsync = async (app) => {
 
   // GET /api/notifications/unread-count
   app.get("/unread-count", { preHandler: [requireAuth] }, async (request) => {
-    const [result] = await app.db
-      .select({
-        count: app.db.$count(notifications, and(
-          eq(notifications.recipientId, request.userId!),
-          eq(notifications.isRead, false)
-        ))
-      });
+    const count = await app.db.$count(notifications, and(
+      eq(notifications.recipientId, request.userId!),
+      eq(notifications.isRead, false)
+    ));
 
-    return { count: result.count };
+    return { count };
   });
 
   // PATCH /api/notifications/:id/read

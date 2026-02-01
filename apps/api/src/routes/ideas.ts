@@ -82,10 +82,10 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
         createdAt: ideas.createdAt,
         creatorUsername: users.username,
         creatorImageUrl: users.profileImageUrl,
+        isSponsored: sql<boolean>`exists (select 1 from idea_sponsorships where idea_id = ${ideas.id} and status = 'accepted')`,
       })
       .from(ideas)
       .innerJoin(users, eq(ideas.creatorId, users.id))
-      .orderBy(desc(ideas.createdAt))
       .limit(pagination.limit)
       .offset(pagination.offset);
 
@@ -126,6 +126,7 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
         creatorId: ideas.creatorId,
         creatorUsername: users.username,
         creatorImageUrl: users.profileImageUrl,
+        isSponsored: sql<boolean>`exists (select 1 from idea_sponsorships where idea_id = ${ideas.id} and status = 'accepted')`,
       })
       .from(ideas)
       .innerJoin(users, eq(ideas.creatorId, users.id))
@@ -331,7 +332,7 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
       const ideaId = (request as any).ideaId as number;
 
       const idea = await app.db
-        .select({ creatorId: ideas.creatorId })
+        .select({ creatorId: ideas.creatorId, title: ideas.title })
         .from(ideas)
         .where(eq(ideas.id, ideaId))
         .limit(1);
@@ -650,6 +651,7 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
           createdAt: ideas.createdAt,
           creatorUsername: users.username,
           creatorImageUrl: users.profileImageUrl,
+          isSponsored: sql<boolean>`exists (select 1 from idea_sponsorships where idea_id = ${ideas.id} and status = 'accepted')`,
         })
         .from(ideas)
         .innerJoin(users, eq(ideas.creatorId, users.id))
