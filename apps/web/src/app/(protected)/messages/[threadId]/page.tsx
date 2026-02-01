@@ -101,50 +101,52 @@ export default function ConversationPage() {
   }
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col bg-card-bg shadow-2xl rounded-sm overflow-hidden border-t-8 border-addis-blue" style={{ height: "calc(100vh - 140px)" }}>
+    <div className="flex h-full flex-col relative">
       {/* Cinematic Conversation Header */}
-      <div className="flex items-center justify-between px-6 py-4 bg-white dark:bg-addis-dark/50 border-b border-gray-100 dark:border-white/5 backdrop-blur-md">
-        <div className="flex items-center gap-4">
-          <Link href="/messages" className="text-gray-400 hover:text-addis-orange transition-colors">
+      <div className="flex items-center justify-between px-8 py-5 bg-white dark:bg-addis-dark border-b border-gray-100 dark:border-white/5 shadow-sm sticky top-0 z-10 transition-colors">
+        <div className="flex items-center gap-5">
+          <Link href="/messages" className="text-gray-400 hover:text-addis-orange transition-colors sm:hidden">
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
           </Link>
           {participant && (
-            <Link href={`/profile/${participant.username}`} className="group flex items-center gap-3">
+            <Link href={`/profile/${participant.username}`} className="group flex items-center gap-4">
               <div className="relative">
-                <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-gray-200 ring-2 ring-addis-orange/20 transition-all group-hover:ring-addis-orange">
+                <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-gray-200 ring-2 ring-addis-orange/20 transition-all group-hover:ring-addis-orange shadow-md">
                   <img
                     src={getAssetUrl(participant.profileImageUrl) ?? "/images/default_user.jpg"}
                     alt={participant.username}
                     className="h-full w-full object-cover"
                   />
                 </div>
-                <div className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-addis-green border-2 border-white dark:border-addis-dark" />
+                <div className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full bg-addis-green border-4 border-white dark:border-addis-dark" />
               </div>
               <div className="flex flex-col">
-                <span className="text-xs font-black text-addis-dark dark:text-white uppercase tracking-wider group-hover:text-addis-orange transition-colors">
+                <span className="text-sm font-black text-addis-dark dark:text-white uppercase tracking-wider group-hover:text-addis-orange transition-colors">
                   @{participant.username.toUpperCase()}
                 </span>
-                <span className="text-[9px] font-black text-addis-green uppercase tracking-widest">Online Now</span>
+                <span className="text-[10px] font-black text-addis-green uppercase tracking-widest">Active Connection</span>
               </div>
             </Link>
           )}
         </div>
-        <div className="hidden sm:block">
-           <span className="text-[9px] font-black text-gray-300 dark:text-white/10 uppercase tracking-[0.3em]">Private Conversation // {threadId.padStart(4, '0')}</span>
+        <div className="hidden md:flex items-center gap-6">
+           <span className="text-[10px] font-black text-gray-300 dark:text-white/10 uppercase tracking-[0.4em]">Node // {threadId.padStart(4, '0')}</span>
+           <div className="h-6 w-px bg-gray-100 dark:border-white/5" />
+           <button className="text-[10px] font-black text-addis-silver hover:text-addis-orange uppercase tracking-widest transition-colors">Project Details</button>
         </div>
       </div>
 
-      {/* High-Fidelity Messages Area */}
-      <div className="flex-1 overflow-y-auto px-6 py-8 space-y-6">
+      {/* High-Fidelity Scrollable Messages Area */}
+      <div className="flex-1 overflow-y-auto px-8 py-10 space-y-10">
         {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center opacity-20 grayscale">
-             <img src="/images/logo.png" className="h-12 mb-4 brightness-0 dark:invert" alt="" />
-             <p className="text-[10px] font-black uppercase tracking-[0.4em]">Start a Conversation</p>
+          <div className="flex flex-col items-center justify-center h-full text-center opacity-10 grayscale dark:invert">
+             <img src="/images/logo.png" className="h-20 mb-6" alt="" />
+             <p className="text-[11px] font-black uppercase tracking-[0.5em]">Initialize Protocol</p>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="max-w-4xl mx-auto space-y-10">
             <AnimatePresence initial={false}>
               {messages.map((msg, idx) => {
                 const isOwn = msg.userId === user?.id;
@@ -153,29 +155,29 @@ export default function ConversationPage() {
                 return (
                   <motion.div
                     key={msg.id}
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    initial={{ opacity: 0, y: 10, scale: 0.98 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
                   >
-                    <div className={`flex gap-3 max-w-[85%] ${isOwn ? "flex-row-reverse" : "flex-row"}`}>
+                    <div className={`flex gap-4 max-w-[80%] ${isOwn ? "flex-row-reverse" : "flex-row"}`}>
                       {!isOwn && (
-                        <div className={`h-8 w-8 rounded-full overflow-hidden shrink-0 mt-auto shadow-sm transition-opacity ${showAvatar ? "opacity-100" : "opacity-0"}`}>
+                        <div className={`h-10 w-10 rounded-full overflow-hidden shrink-0 mt-auto shadow-xl ring-4 ring-white dark:ring-addis-dark transition-opacity ${showAvatar ? "opacity-100" : "opacity-0"}`}>
                            <img src={getAssetUrl(msg.profileImageUrl) ?? "/images/default_user.jpg"} className="h-full w-full object-cover" alt="" />
                         </div>
                       )}
                       
-                      <div className="flex flex-col gap-1">
+                      <div className="flex flex-col gap-2">
                         <div
-                          className={`relative px-4 py-3 shadow-lg ${
+                          className={`relative px-6 py-4 shadow-2xl ${
                             isOwn
-                              ? "bg-gradient-to-br from-addis-orange to-addis-yellow text-white rounded-sm rounded-br-none"
-                              : "bg-white dark:bg-addis-dark text-gray-800 dark:text-gray-200 dark:text-white rounded-sm rounded-bl-none border border-gray-100 dark:border-white/5"
+                              ? "bg-gradient-to-br from-addis-orange to-[#EEB711] text-white rounded-sm rounded-br-none"
+                              : "bg-white dark:bg-black/20 text-gray-800 dark:text-gray-200 rounded-sm rounded-bl-none border border-gray-100 dark:border-white/5"
                           }`}
                         >
                           {isOwn && <div className="absolute inset-0 bg-white/10 mix-blend-overlay" />}
-                          <p className="text-[13px] font-bold leading-relaxed whitespace-pre-wrap break-words">{msg.content}</p>
+                          <p className="text-[15px] font-bold leading-relaxed whitespace-pre-wrap break-words">{msg.content}</p>
                         </div>
-                        <span className={`text-[9px] font-black uppercase tracking-tighter tabular-nums ${isOwn ? "text-right text-addis-orange/40" : "text-left text-gray-300 dark:text-white/10"}`}>
+                        <span className={`text-[10px] font-black uppercase tracking-tighter tabular-nums ${isOwn ? "text-right text-addis-orange/40" : "text-left text-gray-300 dark:text-white/10"}`}>
                           {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
@@ -189,30 +191,41 @@ export default function ConversationPage() {
         )}
       </div>
 
-      {/* Tactile Input Terminal */}
-      <div className="p-6 bg-white dark:bg-addis-dark/30 border-t border-gray-100 dark:border-white/5">
-        {sendError && (
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-3 text-[10px] font-black uppercase text-addis-red tracking-tight">
-            Error: {sendError}
-          </motion.p>
-        )}
-        <form onSubmit={handleSend} className="flex gap-2">
-          <input
-            type="text"
-            value={messageText}
-            onChange={(e) => setMessageText(e.target.value)}
-            placeholder="TYPE YOUR MESSAGE..."
-            maxLength={5000}
-            className="flex-1 bg-gray-50 dark:bg-addis-dark border-2 border-gray-100 dark:border-white/5 px-4 py-3 text-sm font-bold text-gray-900 dark:text-white dark:text-white placeholder:text-gray-300 focus:border-addis-orange focus:outline-none transition-all rounded-sm"
-          />
-          <button
-            type="submit"
-            disabled={sending || !messageText.trim()}
-            className="bg-addis-orange px-8 py-3 text-[11px] font-black uppercase tracking-[0.2em] text-white hover:bg-addis-yellow transition-all active:scale-95 disabled:opacity-50 shadow-xl rounded-sm"
-          >
-            {sending ? "SENDING..." : "SEND"}
-          </button>
-        </form>
+      {/* Tactile Command Input Terminal */}
+      <div className="px-8 py-8 bg-gray-50/50 dark:bg-black/20 border-t border-gray-100 dark:border-white/5 backdrop-blur-md">
+        <div className="max-w-4xl mx-auto">
+          {sendError && (
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4 text-[10px] font-black uppercase text-addis-red tracking-tight">
+              Protocol Error: {sendError}
+            </motion.p>
+          )}
+          <form onSubmit={handleSend} className="flex gap-4 items-stretch">
+            <textarea
+              value={messageText}
+              onChange={(e) => setMessageText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend(e as unknown as FormEvent);
+                }
+              }}
+              placeholder="ENTER MESSAGE..."
+              rows={1}
+              className="flex-1 bg-white dark:bg-addis-dark border-2 border-gray-100 dark:border-white/5 px-6 py-4 text-base font-bold text-gray-900 dark:text-white placeholder:text-gray-300 focus:border-addis-orange focus:outline-none transition-all rounded-sm shadow-inner resize-none min-h-[60px]"
+            />
+            <button
+              type="submit"
+              disabled={sending || !messageText.trim()}
+              className="bg-addis-orange px-12 text-[12px] font-black uppercase tracking-[0.3em] text-white hover:bg-addis-yellow transition-all active:scale-95 disabled:opacity-50 shadow-2xl rounded-sm group overflow-hidden relative"
+            >
+              <span className="relative z-10">{sending ? "..." : "SEND"}</span>
+              <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+            </button>
+          </form>
+          <p className="mt-3 text-[9px] font-bold text-gray-400 dark:text-white/10 uppercase tracking-widest text-center sm:text-left">
+            Press [ENTER] to execute transmission • [SHIFT + ENTER] for new line
+          </p>
+        </div>
       </div>
     </div>
   );
