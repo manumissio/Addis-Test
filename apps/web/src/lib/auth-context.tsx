@@ -14,6 +14,7 @@ type User = {
   id: number;
   username: string;
   profileImageUrl: string | null;
+  role: "user" | "sponsor" | "admin";
 };
 
 type AuthContext = {

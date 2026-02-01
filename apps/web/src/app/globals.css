@@ -3,10 +3,11 @@
 :root {
   --background: #f5f5f5;
   --foreground: #34495e;
-  --addis-orange: #d67f1f;
-  --addis-green: #0f9d58;
-  --addis-blue: #008bcc;
-  --addis-red: #d9534f;
+  --addis-orange: #E17A18;
+  --addis-green: #86B82A;
+  --addis-yellow: #EEB711;
+  --addis-blue: #3498db;
+  --addis-red: #e74c3c;
   --addis-dark: #2c3e50;
   --addis-silver: #bdc3c7;
   --addis-light: #ecf0f1;
@@ -17,6 +18,7 @@
   --color-foreground: var(--foreground);
   --color-addis-orange: var(--addis-orange);
   --color-addis-green: var(--addis-green);
+  --color-addis-yellow: var(--addis-yellow);
   --color-addis-blue: var(--addis-blue);
   --color-addis-red: var(--addis-red);
   --color-addis-dark: var(--addis-dark);
@@ -41,8 +43,38 @@ a {
 }
 
 /* Legacy flat button style */
-.btn-flat {
-  border-radius: 0;
+.btn-addis-orange {
+  background-color: var(--addis-orange);
+  color: white;
+  font-weight: bold;
+  transition: all 300ms;
+}
+
+.btn-addis-orange:hover {
+  background-color: var(--addis-yellow);
+  border-bottom: 5px solid var(--addis-green);
+}
+
+.btn-addis-green {
+  background-color: var(--addis-green);
+  color: white;
+  font-weight: bold;
+  transition: all 300ms;
+}
+
+.btn-addis-green:hover {
+  background-color: var(--addis-yellow);
+  border-bottom: 5px solid var(--addis-orange);
+}
+
+.addis-link {
+  color: var(--addis-green);
+  font-weight: bold;
+}
+
+.addis-link:hover {
+  text-decoration: underline;
+  color: var(--addis-orange);
 }
 
 /* Topic/category tag style matching legacy */

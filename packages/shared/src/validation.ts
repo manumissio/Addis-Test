@@ -98,6 +98,18 @@ export const passwordResetConfirmSchema = z.object({
   newPassword: passwordSchema,
 });
 
+export const applySponsorshipSchema = z.object({
+  message: z.string().min(10, "Offer message must be at least 10 characters").max(2000),
+  amount: z.string().max(100).optional(),
+});
+
+export const sponsorProfileSchema = z.object({
+  companyName: z.string().min(1, "Company name is required").max(255),
+  website: z.string().url("Invalid website URL").max(255).optional().or(z.literal("")),
+  industry: z.string().max(255).optional(),
+  fundingFocus: z.string().max(1000).optional(),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type CreateIdeaInput = z.infer<typeof createIdeaSchema>;
@@ -109,3 +121,5 @@ export type TopicInput = z.infer<typeof topicSchema>;
 export type StakeholderInput = z.infer<typeof stakeholderSchema>;
 export type PasswordResetRequestInput = z.infer<typeof passwordResetRequestSchema>;
 export type PasswordResetConfirmInput = z.infer<typeof passwordResetConfirmSchema>;
+export type ApplySponsorshipInput = z.infer<typeof applySponsorshipSchema>;
+export type SponsorProfileInput = z.infer<typeof sponsorProfileSchema>;

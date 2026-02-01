@@ -89,10 +89,10 @@ export default function ProfilePage() {
     .join(", ");
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 bg-[#FFFFF3] p-8 shadow-sm border-t-8 border-addis-orange">
       {/* Profile header */}
-      <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
-        <div className="h-24 w-24 shrink-0 overflow-hidden rounded-full bg-gray-200">
+      <div className="flex flex-col items-center gap-8 sm:flex-row sm:items-start">
+        <div className="h-32 w-32 shrink-0 overflow-hidden rounded-full bg-white ring-4 ring-white shadow-md">
           <img
             src={getAssetUrl(profile.profileImageUrl) ?? "/images/default_user.jpg"}
             alt={profile.username}
@@ -101,50 +101,63 @@ export default function ProfilePage() {
         </div>
 
         <div className="flex-1 text-center sm:text-left">
-          <div className="flex items-center justify-center gap-3 sm:justify-start">
-            <h1 className="text-xl font-bold">{profile.username}</h1>
-            {isOwnProfile ? (
-              <Link
-                href="/profile/edit"
-                className="rounded-md border border-gray-300 px-3 py-1 text-xs text-gray-600 hover:bg-gray-50"
-              >
-                Edit Profile
-              </Link>
-            ) : (
-              <Link
-                href={`/messages/new?to=${profile.id}&username=${encodeURIComponent(profile.username)}`}
-                className="rounded-md bg-addis-orange px-3 py-1 text-xs text-white hover:bg-addis-orange/90"
-              >
-                Message
-              </Link>
-            )}
+          <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-addis-dark">{profile.username.toUpperCase()}</h1>
+              {profile.profession && (
+                <p className="text-sm font-bold text-addis-green uppercase tracking-wide">{profile.profession}</p>
+              )}
+            </div>
+            
+            <div className="flex gap-2">
+              {isOwnProfile ? (
+                <Link
+                  href="/settings"
+                  className="btn-addis-green px-6 py-2 text-sm shadow-sm"
+                >
+                  EDIT PROFILE
+                </Link>
+              ) : (
+                <Link
+                  href={`/messages/new?to=${profile.id}&username=${encodeURIComponent(profile.username)}`}
+                  className="btn-addis-orange px-6 py-2 text-sm shadow-sm"
+                >
+                  SEND MESSAGE
+                </Link>
+              )}
+            </div>
           </div>
-          {profile.profession && (
-            <p className="mt-1 text-sm text-gray-500">{profile.profession}</p>
-          )}
+
           {location && (
-            <p className="mt-1 text-sm text-gray-400">{location}</p>
-          )}
-          {profile.about && (
-            <p className="mt-3 text-sm text-gray-700">{profile.about}</p>
+            <p className="mt-2 text-sm text-gray-500 font-medium">
+              <span className="text-addis-orange">📍</span> {location}
+            </p>
           )}
 
-          <div className="mt-4 flex justify-center gap-6 text-sm sm:justify-start">
-            <div>
-              <span className="font-semibold">{profile.ideasCount}</span>{" "}
-              <span className="text-gray-500">ideas</span>
+          {profile.about && (
+            <div className="mt-4 border-l-4 border-addis-yellow bg-white p-4 shadow-sm italic text-gray-700 leading-relaxed">
+              "{profile.about}"
+            </div>
+          )}
+
+          <div className="mt-6 flex justify-center gap-8 text-center sm:justify-start">
+            <div className="border-r border-gray-200 pr-8">
+              <span className="block text-2xl font-bold text-addis-dark">{profile.ideasCount}</span>
+              <span className="text-xs font-bold text-gray-400 uppercase">Ideas</span>
             </div>
             <div>
-              <span className="font-semibold">{profile.viewsCount}</span>{" "}
-              <span className="text-gray-500">profile views</span>
+              <span className="block text-2xl font-bold text-addis-dark">{profile.viewsCount}</span>
+              <span className="text-xs font-bold text-gray-400 uppercase">Profile Views</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Topics */}
-      <section>
-        <h2 className="mb-2 text-sm font-semibold text-gray-700">Interests</h2>
+      <section className="pt-8 border-t border-gray-100">
+        <h2 className="mb-4 inline-block border-b-4 border-addis-green text-sm font-bold text-addis-dark uppercase tracking-widest">
+          Interests & Skills
+        </h2>
         <TopicManager
           topics={topics}
           addEndpoint="/api/users/topics"
@@ -155,25 +168,27 @@ export default function ProfilePage() {
       </section>
 
       {/* Ideas */}
-      <section>
-        <h2 className="mb-4 text-sm font-semibold text-gray-700">Ideas</h2>
+      <section className="pt-8 border-t border-gray-100">
+        <h2 className="mb-6 inline-block border-b-4 border-addis-orange text-sm font-bold text-addis-dark uppercase tracking-widest">
+          My Ideas
+        </h2>
         {ideas.length === 0 ? (
-          <p className="text-sm text-gray-400">No ideas yet.</p>
+          <p className="py-8 text-center text-sm text-gray-400 border-2 border-dashed border-gray-100 rounded-xl">No ideas published yet.</p>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-6 sm:grid-cols-2">
             {ideas.map((idea) => (
               <Link
                 key={idea.id}
                 href={`/ideas/${idea.id}`}
-                className="rounded-lg border p-4 hover:border-addis-orange/50 hover:shadow-sm"
+                className="group flex flex-col border-l-4 border-addis-yellow bg-white p-5 shadow-sm transition-all hover:bg-orange-50/20 hover:border-addis-orange"
               >
-                <h3 className="font-medium">{idea.title}</h3>
-                <p className="mt-1 line-clamp-2 text-sm text-gray-500">
-                  {idea.description}
+                <h3 className="font-bold text-addis-dark group-hover:text-addis-orange">{idea.title.toUpperCase()}</h3>
+                <p className="mt-2 line-clamp-2 text-sm text-gray-600">
+                  {idea.description.replace(/<[^>]*>/g, "")}
                 </p>
-                <div className="mt-3 flex gap-4 text-xs text-gray-400">
-                  <span>{idea.likesCount} likes</span>
-                  <span>{idea.commentsCount} comments</span>
+                <div className="mt-4 flex gap-6 text-xs font-bold">
+                  <span className="text-addis-orange">❤ {idea.likesCount}</span>
+                  <span className="text-addis-green">💬 {idea.commentsCount}</span>
                 </div>
               </Link>
             ))}
@@ -183,23 +198,28 @@ export default function ProfilePage() {
 
       {/* Collaborations */}
       {collaborations.length > 0 && (
-        <section>
-          <h2 className="mb-4 text-sm font-semibold text-gray-700">Collaborating On</h2>
-          <div className="grid gap-4 sm:grid-cols-2">
+        <section className="pt-8 border-t border-gray-100">
+          <h2 className="mb-6 inline-block border-b-4 border-addis-yellow text-sm font-bold text-addis-dark uppercase tracking-widest">
+            Collaborating On
+          </h2>
+          <div className="grid gap-6 sm:grid-cols-2">
             {collaborations.map((collab) => (
               <Link
                 key={collab.id}
                 href={`/ideas/${collab.id}`}
-                className="rounded-lg border p-4 hover:border-addis-orange/50 hover:shadow-sm"
+                className="group flex flex-col border-l-4 border-addis-green bg-white p-5 shadow-sm transition-all hover:bg-green-50/20 hover:border-addis-orange"
               >
-                <h3 className="font-medium">{collab.title}</h3>
-                <p className="mt-1 text-xs text-gray-400">by {collab.creatorUsername}</p>
-                <p className="mt-1 line-clamp-2 text-sm text-gray-500">
-                  {collab.description}
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-addis-dark group-hover:text-addis-orange">{collab.title.toUpperCase()}</h3>
+                  <span className="text-[10px] font-bold text-gray-400 bg-gray-50 px-2 py-1 uppercase">TEAM</span>
+                </div>
+                <p className="mt-1 text-xs font-bold text-addis-green">BY @{collab.creatorUsername.toUpperCase()}</p>
+                <p className="mt-2 line-clamp-2 text-sm text-gray-600">
+                  {collab.description.replace(/<[^>]*>/g, "")}
                 </p>
-                <div className="mt-3 flex gap-4 text-xs text-gray-400">
-                  <span>{collab.likesCount} likes</span>
-                  <span>{collab.commentsCount} comments</span>
+                <div className="mt-4 flex gap-6 text-xs font-bold">
+                  <span className="text-addis-orange">❤ {collab.likesCount}</span>
+                  <span className="text-addis-green">💬 {collab.commentsCount}</span>
                 </div>
               </Link>
             ))}

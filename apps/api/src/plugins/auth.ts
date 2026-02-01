@@ -6,7 +6,7 @@ import type { FastifyRequest, FastifyReply } from "fastify";
 declare module "fastify" {
   interface FastifyRequest {
     userId: number | null;
-    user: { id: number; username: string; profileImageUrl: string | null } | null;
+    user: { id: number; username: string; profileImageUrl: string | null; role: "user" | "sponsor" | "admin" } | null;
   }
 }
 
@@ -37,6 +37,7 @@ export default fp(async (fastify) => {
         expiresAt: sessions.expiresAt,
         username: users.username,
         profileImageUrl: users.profileImageUrl,
+        role: users.role,
       })
       .from(sessions)
       .innerJoin(users, eq(sessions.userId, users.id))
@@ -57,6 +58,7 @@ export default fp(async (fastify) => {
       id: session.userId,
       username: session.username,
       profileImageUrl: session.profileImageUrl,
+      role: session.role,
     };
   });
 });

@@ -7,6 +7,7 @@ import {
   timestamp,
   boolean,
   uniqueIndex,
+  index,
 } from "drizzle-orm/pg-core";
 import { users } from "./users.js";
 
@@ -26,7 +27,10 @@ export const ideas = pgTable("ideas", {
   collaboratorsCount: integer("collaborators_count").default(0).notNull(),
   commentsCount: integer("comments_count").default(0).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-});
+}, (t) => ({
+  creatorIdx: index("ideas_creator_id_idx").on(t.creatorId),
+  createdAtIdx: index("ideas_created_at_idx").on(t.createdAt),
+}));
 
 export const ideaLikes = pgTable("idea_likes", {
   id: serial("id").primaryKey(),
@@ -39,6 +43,7 @@ export const ideaLikes = pgTable("idea_likes", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 }, (t) => ({
   unqLike: uniqueIndex("unique_user_idea_like").on(t.userId, t.ideaId),
+  ideaIdx: index("idea_likes_idea_id_idx").on(t.ideaId),
 }));
 
 export const ideaTopics = pgTable("idea_topics", {
@@ -47,7 +52,10 @@ export const ideaTopics = pgTable("idea_topics", {
     .references(() => ideas.id, { onDelete: "cascade" })
     .notNull(),
   topicName: varchar("topic_name", { length: 255 }).notNull(),
-});
+}, (t) => ({
+  ideaIdx: index("idea_topics_idea_id_idx").on(t.ideaId),
+  topicIdx: index("idea_topics_name_idx").on(t.topicName),
+}));
 
 export const ideaAddressedTo = pgTable("idea_addressed_to", {
   id: serial("id").primaryKey(),
@@ -55,7 +63,9 @@ export const ideaAddressedTo = pgTable("idea_addressed_to", {
     .references(() => ideas.id, { onDelete: "cascade" })
     .notNull(),
   stakeholder: varchar("stakeholder", { length: 255 }).notNull(),
-});
+}, (t) => ({
+  ideaIdx: index("idea_addressed_idea_id_idx").on(t.ideaId),
+}));
 
 export const collaborations = pgTable("collaborations", {
   id: serial("id").primaryKey(),

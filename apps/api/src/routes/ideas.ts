@@ -17,6 +17,7 @@ import { requireIdeaOwnership } from "../utils/ownership.js";
 import { handleUniqueViolation } from "../utils/errors.js";
 import { validateIdeaId } from "../middleware/validateId.js";
 import { sanitizePlainText, sanitizeRichText } from "../utils/sanitize.js";
+import { createNotification } from "../utils/notifications.js";
 
 // Response types
 type IdeaFeedItem = {
@@ -34,6 +35,7 @@ type IdeaFeedItem = {
   createdAt: Date;
   creatorUsername: string;
   creatorImageUrl: string | null;
+  isSponsored: boolean;
 };
 
 type IdeaDetail = IdeaFeedItem & {
@@ -268,6 +270,24 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
 
       try {
         await app.db.insert(ideaLikes).values({ userId: request.userId!, ideaId });
+        
+        // Fetch idea creator to notify
+        const idea = await app.db
+          .select({ creatorId: ideas.creatorId, title: ideas.title })
+          .from(ideas)
+          .where(eq(ideas.id, ideaId))
+          .limit(1);
+
+        if (idea[0]) {
+          await createNotification(app.db, {
+            recipientId: idea[0].creatorId,
+            senderId: request.userId!,
+            type: "like",
+            message: `liked your idea "${idea[0].title}"`,
+            link: `/ideas/${ideaId}`,
+          });
+        }
+
         await app.db
           .update(ideas)
           .set({ likesCount: sql`${ideas.likesCount} + 1` })
@@ -326,6 +346,17 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
           ideaId,
           isAdmin,
         });
+
+        // Notify idea creator
+        if (!isAdmin) {
+          await createNotification(app.db, {
+            recipientId: idea[0].creatorId,
+            senderId: request.userId!,
+            type: "collab_request",
+            message: `joined as a collaborator on your idea "${idea[0].title}"`,
+            link: `/ideas/${ideaId}`,
+          });
+        }
 
         await app.db
           .update(ideas)
@@ -436,6 +467,23 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
           content: sanitizedContent,
         })
         .returning();
+
+      // Notify idea creator
+      const idea = await app.db
+        .select({ creatorId: ideas.creatorId, title: ideas.title })
+        .from(ideas)
+        .where(eq(ideas.id, ideaId))
+        .limit(1);
+
+      if (idea[0]) {
+        await createNotification(app.db, {
+          recipientId: idea[0].creatorId,
+          senderId: request.userId!,
+          type: "comment",
+          message: `commented on your idea "${idea[0].title}"`,
+          link: `/ideas/${ideaId}`,
+        });
+      }
 
       await app.db
         .update(ideas)
@@ -617,9 +665,9 @@ export const ideasRoutes: FastifyPluginAsync = async (app) => {
       }
 
       if (topic) {
-        // Filter ideas that have this topic
+        // Filter ideas that have this topic using EXISTS for better performance than IN
         conditions.push(
-          sql`${ideas.id} in (select idea_id from idea_topics where topic_name = ${topic})`
+          sql`exists (select 1 from idea_topics where idea_id = ${ideas.id} and topic_name = ${topic})`
         );
       }
 

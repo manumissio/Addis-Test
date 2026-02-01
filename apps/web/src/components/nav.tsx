@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { getAssetUrl } from "@/lib/api";
+import { NotificationDropdown } from "./notification-dropdown";
 
 export function Nav() {
   const { user, logout } = useAuth();
@@ -17,57 +18,60 @@ export function Nav() {
     pathname === path || pathname.startsWith(path + "/");
 
   const linkClass = (path: string) =>
-    `rounded-md px-3 py-2 text-sm transition-colors ${
+    `px-4 py-2 text-sm font-bold transition-all border-b-4 ${
       isActive(path)
-        ? "text-addis-orange font-medium bg-orange-50"
-        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+        ? "text-white border-addis-yellow bg-addis-yellow/20"
+        : "text-white border-transparent hover:bg-addis-yellow hover:border-addis-green"
     }`;
 
   const profileImageUrl = getAssetUrl(user.profileImageUrl);
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-md">
-      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
+    <nav className="sticky top-0 z-50 bg-addis-orange shadow-md">
+      <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
         {/* Logo */}
         <div className="flex items-center gap-6">
           <Link href="/feed" className="flex items-center gap-2">
-            <img src="/images/logo.png" alt="Addis Ideas" className="h-8 w-auto" />
+            <img src="/images/logo.png" alt="Addis Ideas" className="h-10 w-auto brightness-0 invert" />
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden items-center gap-1 sm:flex">
+          <div className="hidden h-16 items-center gap-0 sm:flex">
             <Link href="/feed" className={linkClass("/feed")}>
-              Feed
+              HOME
             </Link>
             <Link href="/discover" className={linkClass("/discover")}>
-              Discover
+              SEARCH
             </Link>
             <Link href="/messages" className={linkClass("/messages")}>
-              Messages
+              MESSAGES
             </Link>
           </div>
         </div>
 
         {/* Desktop Right Side */}
         <div className="hidden items-center gap-4 sm:flex">
-          {/* Primary CTA - rounded-md for consistency */}
+          {/* Notifications */}
+          <NotificationDropdown />
+
+          {/* Primary CTA */}
           <Link
             href="/ideas/new"
-            className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-gray-800"
+            className="rounded-sm bg-addis-green px-4 py-2 text-sm font-bold text-white shadow-sm transition-all hover:bg-addis-yellow hover:border-b-4 hover:border-addis-orange"
           >
-            New Idea
+            CREATE
           </Link>
 
           {/* Divider */}
-          <div className="mx-1 h-6 w-px bg-gray-200" />
+          <div className="mx-1 h-6 w-px bg-white/20" />
 
           {/* User Identity Group */}
           <div className="flex items-center gap-3">
             <Link
               href={`/profile/${user.username}`}
-              className="group flex items-center gap-2 rounded-full p-1 pr-3 transition-colors hover:bg-gray-50"
+              className="group flex items-center gap-2 rounded-full p-1 pr-3 transition-colors hover:bg-white/10"
             >
-              <div className="h-8 w-8 overflow-hidden rounded-full bg-gray-200 ring-1 ring-gray-200 transition-all group-hover:ring-gray-300">
+              <div className="h-8 w-8 overflow-hidden rounded-full bg-white/20 ring-1 ring-white/30 transition-all group-hover:ring-white">
                 {profileImageUrl ? (
                   <img
                     src={profileImageUrl}
@@ -75,30 +79,22 @@ export function Nav() {
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-gray-100 text-xs font-bold text-gray-500">
+                  <div className="flex h-full w-full items-center justify-center bg-white/10 text-xs font-bold text-white">
                     {user.username.slice(0, 2).toUpperCase()}
                   </div>
                 )}
               </div>
-              <span className="text-sm font-medium leading-none text-gray-700 group-hover:text-gray-900">
-                {user.username}
+              <span className="text-sm font-bold leading-none text-white">
+                {user.username.toUpperCase()}
               </span>
-            </Link>
-
-            {/* Settings */}
-            <Link
-              href="/settings"
-              className="text-xs text-gray-400 transition-colors hover:text-gray-600"
-            >
-              Settings
             </Link>
 
             {/* Logout */}
             <button
               onClick={logout}
-              className="text-xs font-medium text-gray-400 transition-colors hover:text-red-600"
+              className="text-xs font-bold text-white/70 transition-colors hover:text-white"
             >
-              Log out
+              LOGOUT
             </button>
           </div>
         </div>
@@ -170,6 +166,13 @@ export function Nav() {
               className="text-gray-600 hover:text-gray-900"
             >
               New Idea
+            </Link>
+            <Link
+              href="/notifications"
+              onClick={() => setMenuOpen(false)}
+              className={isActive("/notifications") ? "font-medium text-addis-orange" : "text-gray-600 hover:text-gray-900"}
+            >
+              Notifications
             </Link>
             <Link
               href="/messages"

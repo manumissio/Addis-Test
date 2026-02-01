@@ -14,6 +14,8 @@ import { usersRoutes } from "./routes/users.js";
 import { ideasRoutes } from "./routes/ideas.js";
 import { messagesRoutes } from "./routes/messages.js";
 import { uploadsRoutes } from "./routes/uploads.js";
+import { notificationsRoutes } from "./routes/notifications.js";
+import { sponsorshipsRoutes } from "./routes/sponsorships.js";
 import { errorHandler } from "./utils/errors.js";
 
 export async function buildApp() {
@@ -55,6 +57,20 @@ export async function buildApp() {
   // Auth (session resolution)
   await app.register(authPlugin);
 
+  // CSRF Protection Hook
+  // Requires a custom header for all mutating requests to prevent CSRF.
+  // This is effective because standard HTML forms cannot set custom headers,
+  // and CORS policies will block unauthorized cross-origin AJAX requests.
+  app.addHook("preHandler", async (request, reply) => {
+    const isMutating = ["POST", "PUT", "PATCH", "DELETE"].includes(request.method);
+    if (isMutating) {
+      const csrfHeader = request.headers["x-requested-with"];
+      if (!csrfHeader || csrfHeader !== "XMLHttpRequest") {
+        return reply.status(403).send({ error: "CSRF protection: missing or invalid X-Requested-With header" });
+      }
+    }
+  });
+
   // Error handling
   app.setErrorHandler(errorHandler);
 
@@ -64,6 +80,8 @@ export async function buildApp() {
   await app.register(ideasRoutes, { prefix: "/api/ideas" });
   await app.register(messagesRoutes, { prefix: "/api/messages" });
   await app.register(uploadsRoutes, { prefix: "/api/uploads" });
+  await app.register(notificationsRoutes, { prefix: "/api/notifications" });
+  await app.register(sponsorshipsRoutes, { prefix: "/api/sponsorships" });
 
   // Health check
   app.get("/api/health", async () => ({ status: "ok" }));

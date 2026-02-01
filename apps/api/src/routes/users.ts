@@ -4,6 +4,7 @@ import { users, ideas, profileViews, messages, userTopics, collaborations } from
 import { updateProfileSchema, updateUsernameSchema, updateEmailSchema, paginationSchema, topicSchema } from "@addis/shared";
 import { requireAuth } from "../plugins/auth.js";
 import { sanitizePlainText, sanitizeRichText } from "../utils/sanitize.js";
+import { createNotification } from "../utils/notifications.js";
 
 export const usersRoutes: FastifyPluginAsync = async (app) => {
   // GET /api/users/:username
@@ -38,6 +39,14 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
       await app.db.insert(profileViews).values({
         viewerId: request.userId,
         viewedId: user.id,
+      });
+
+      await createNotification(app.db, {
+        recipientId: user.id,
+        senderId: request.userId,
+        type: "profile_view",
+        message: "viewed your profile",
+        link: `/profile/${request.user?.username}`,
       });
     }
 

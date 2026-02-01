@@ -19,7 +19,10 @@ export async function api<T = unknown>(
 ): Promise<T> {
   const { method = "GET", body, headers = {} } = options;
 
-  const requestHeaders: Record<string, string> = { ...headers };
+  const requestHeaders: Record<string, string> = {
+    ...headers,
+    "X-Requested-With": "XMLHttpRequest",
+  };
   if (body) {
     requestHeaders["Content-Type"] = "application/json";
   }

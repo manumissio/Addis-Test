@@ -19,16 +19,16 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8 py-10">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Account Settings</h1>
-        <p className="mt-2 text-gray-500">Manage your profile information and security preferences.</p>
+    <div className="mx-auto max-w-3xl space-y-8 py-10 px-4">
+      <div className="mb-10 border-b-8 border-addis-orange pb-6">
+        <h1 className="text-4xl font-bold text-addis-dark uppercase tracking-tight">Account Settings</h1>
+        <p className="mt-2 text-sm font-bold text-addis-green uppercase tracking-widest">Configuration & Security</p>
       </div>
 
       {/* Notification Banner */}
       {message && (
-        <div className={`rounded-md p-4 text-sm ${message.type === "error" ? "bg-red-50 text-red-600" : "bg-green-50 text-green-600"}`}>
-          {message.text}
+        <div className={`border-l-4 p-4 shadow-sm animate-in fade-in slide-in-from-top-2 ${message.type === "error" ? "bg-red-50 border-red-500 text-red-700" : "bg-green-50 border-green-500 text-green-700"}`}>
+          <p className="text-sm font-bold uppercase">{message.text}</p>
         </div>
       )}
 
@@ -96,15 +96,15 @@ function UsernameSection({
   }
 
   return (
-    <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-      <div className="border-b border-gray-100 bg-gray-50/50 px-6 py-4">
-        <h2 className="text-lg font-medium text-gray-900">Username</h2>
-        <p className="text-sm text-gray-500">Your unique identifier on the platform.</p>
+    <section className="overflow-hidden bg-[#FFFFF3] shadow-md border-t-4 border-addis-yellow">
+      <div className="border-b border-gray-100 bg-gray-50/30 px-6 py-4">
+        <h2 className="text-sm font-bold text-addis-dark uppercase tracking-widest">Username</h2>
+        <p className="text-[10px] font-bold text-gray-400 uppercase">Your unique identifier on the platform.</p>
       </div>
       <div className="p-6">
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:flex-row sm:items-end">
           <div className="flex-1">
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="username" className="block text-xs font-bold text-gray-500 uppercase mb-1">
               Username
             </label>
             <input
@@ -113,15 +113,15 @@ function UsernameSection({
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               maxLength={25}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-addis-orange focus:outline-none focus:ring-1 focus:ring-addis-orange"
+              className="mt-1 block w-full border-2 border-gray-100 bg-white px-3 py-2 text-sm shadow-inner focus:border-addis-orange focus:outline-none"
             />
           </div>
           <button
             type="submit"
             disabled={saving}
-            className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-gray-800 disabled:opacity-50"
+            className="btn-addis-orange px-8 py-2 text-sm uppercase shadow-sm disabled:opacity-50"
           >
-            {saving ? "Saving..." : "Update"}
+            {saving ? "SAVING..." : "UPDATE"}
           </button>
         </form>
       </div>
@@ -165,15 +165,15 @@ function EmailSection({
   }
 
   return (
-    <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-      <div className="border-b border-gray-100 bg-gray-50/50 px-6 py-4">
-        <h2 className="text-lg font-medium text-gray-900">Email Address</h2>
-        <p className="text-sm text-gray-500">Used for account notifications and recovery.</p>
+    <section className="overflow-hidden bg-[#FFFFF3] shadow-md border-t-4 border-addis-green">
+      <div className="border-b border-gray-100 bg-gray-50/30 px-6 py-4">
+        <h2 className="text-sm font-bold text-addis-dark uppercase tracking-widest">Email Address</h2>
+        <p className="text-[10px] font-bold text-gray-400 uppercase">Used for account notifications and recovery.</p>
       </div>
       <div className="p-6">
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:flex-row sm:items-end">
           <div className="flex-1">
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="email" className="block text-xs font-bold text-gray-500 uppercase mb-1">
               New Email
             </label>
             <input
@@ -182,15 +182,15 @@ function EmailSection({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter new email address"
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-addis-orange focus:outline-none focus:ring-1 focus:ring-addis-orange"
+              className="mt-1 block w-full border-2 border-gray-100 bg-white px-3 py-2 text-sm shadow-inner focus:border-addis-orange focus:outline-none"
             />
           </div>
           <button
             type="submit"
             disabled={saving}
-            className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-gray-800 disabled:opacity-50"
+            className="btn-addis-green px-8 py-2 text-sm uppercase shadow-sm disabled:opacity-50"
           >
-            {saving ? "Saving..." : "Update"}
+            {saving ? "SAVING..." : "UPDATE"}
           </button>
         </form>
       </div>
@@ -247,16 +247,16 @@ function PasswordSection({
   }
 
   return (
-    <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-      <div className="border-b border-gray-100 bg-gray-50/50 px-6 py-4">
-        <h2 className="text-lg font-medium text-gray-900">Security</h2>
-        <p className="text-sm text-gray-500">Update your password to keep your account secure.</p>
+    <section className="overflow-hidden bg-[#FFFFF3] shadow-md border-t-4 border-addis-orange">
+      <div className="border-b border-gray-100 bg-gray-50/30 px-6 py-4">
+        <h2 className="text-sm font-bold text-addis-dark uppercase tracking-widest">Security</h2>
+        <p className="text-[10px] font-bold text-gray-400 uppercase">Update your password to keep your account secure.</p>
       </div>
       <div className="p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid gap-4 md:grid-cols-3">
             <div>
-              <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="currentPassword" className="block text-xs font-bold text-gray-500 uppercase mb-1">
                 Current Password
               </label>
               <input
@@ -264,11 +264,11 @@ function PasswordSection({
                 type="password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-addis-orange focus:outline-none focus:ring-1 focus:ring-addis-orange"
+                className="mt-1 block w-full border-2 border-gray-100 bg-white px-3 py-2 text-sm shadow-inner focus:border-addis-orange focus:outline-none"
               />
             </div>
             <div>
-              <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="newPassword" className="block text-xs font-bold text-gray-500 uppercase mb-1">
                 New Password
               </label>
               <input
@@ -276,11 +276,11 @@ function PasswordSection({
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-addis-orange focus:outline-none focus:ring-1 focus:ring-addis-orange"
+                className="mt-1 block w-full border-2 border-gray-100 bg-white px-3 py-2 text-sm shadow-inner focus:border-addis-orange focus:outline-none"
               />
             </div>
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="confirmPassword" className="block text-xs font-bold text-gray-500 uppercase mb-1">
                 Confirm Password
               </label>
               <input
@@ -288,7 +288,7 @@ function PasswordSection({
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-addis-orange focus:outline-none focus:ring-1 focus:ring-addis-orange"
+                className="mt-1 block w-full border-2 border-gray-100 bg-white px-3 py-2 text-sm shadow-inner focus:border-addis-orange focus:outline-none"
               />
             </div>
           </div>
@@ -296,9 +296,9 @@ function PasswordSection({
             <button
               type="submit"
               disabled={saving}
-              className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-gray-800 disabled:opacity-50"
+              className="btn-addis-orange px-8 py-2 text-sm uppercase shadow-sm disabled:opacity-50"
             >
-              {saving ? "Updating..." : "Update Password"}
+              {saving ? "UPDATING..." : "UPDATE PASSWORD"}
             </button>
           </div>
         </form>

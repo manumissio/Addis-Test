@@ -5,6 +5,7 @@ import { messageSchema, paginationSchema } from "@addis/shared";
 import { requireAuth } from "../plugins/auth.js";
 import { validateThreadId, validateRecipientId, validateMessageId } from "../middleware/validateId.js";
 import { sanitizeRichText } from "../utils/sanitize.js";
+import { createNotification } from "../utils/notifications.js";
 
 // Response types
 type ThreadSummary = {
@@ -256,6 +257,15 @@ export const messagesRoutes: FastifyPluginAsync = async (app) => {
           content: sanitizedContent,
         })
         .returning();
+
+      // Notify recipient
+      await createNotification(app.db, {
+        recipientId,
+        senderId: request.userId!,
+        type: "message",
+        message: "sent you a message",
+        link: `/messages/${threadId}`,
+      });
 
       return reply.status(201).send({ message, threadId });
     }

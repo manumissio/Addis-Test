@@ -5,6 +5,7 @@ import {
   integer,
   text,
   timestamp,
+  index,
 } from "drizzle-orm/pg-core";
 import { users } from "./users.js";
 import { ideas } from "./ideas.js";
@@ -20,7 +21,9 @@ export const messageThreads = pgTable("message_threads", {
   ideaId: integer("idea_id").references(() => ideas.id, { onDelete: "cascade" }),
   messageType: messageTypeEnum("message_type").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-});
+}, (t) => ({
+  ideaIdx: index("message_threads_idea_id_idx").on(t.ideaId),
+}));
 
 export const messages = pgTable("messages", {
   id: serial("id").primaryKey(),
@@ -32,7 +35,11 @@ export const messages = pgTable("messages", {
     .notNull(),
   content: text("content").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-});
+}, (t) => ({
+  threadIdx: index("messages_thread_id_idx").on(t.threadId),
+  userIdx: index("messages_user_id_idx").on(t.userId),
+  createdAtIdx: index("messages_created_at_idx").on(t.createdAt),
+}));
 
 export const threadParticipants = pgTable("thread_participants", {
   id: serial("id").primaryKey(),
@@ -42,4 +49,7 @@ export const threadParticipants = pgTable("thread_participants", {
   userId: integer("user_id")
     .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
-});
+}, (t) => ({
+  threadIdx: index("thread_participants_thread_id_idx").on(t.threadId),
+  userIdx: index("thread_participants_user_id_idx").on(t.userId),
+}));

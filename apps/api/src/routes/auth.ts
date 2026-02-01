@@ -43,6 +43,7 @@ type AuthUser = {
   id: number;
   username: string;
   profileImageUrl: string | null;
+  role: "user" | "sponsor" | "admin";
 };
 
 export const authRoutes: FastifyPluginAsync = async (app) => {
@@ -94,7 +95,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
         firstName: sanitizedData.firstName,
         lastName: sanitizedData.lastName,
       })
-      .returning({ id: users.id, username: users.username });
+      .returning({ id: users.id, username: users.username, role: users.role });
 
     // Create session
     const sessionId = generateSessionId();
@@ -118,6 +119,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
         id: newUser.id,
         username: newUser.username,
         profileImageUrl: null, // New users have no profile image
+        role: newUser.role,
       },
     };
   });
@@ -136,6 +138,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
         username: users.username,
         passwordHash: users.passwordHash,
         profileImageUrl: users.profileImageUrl,
+        role: users.role,
       })
       .from(users)
       .where(eq(users.username, username))
@@ -178,6 +181,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
         id: user.id,
         username: user.username,
         profileImageUrl: user.profileImageUrl,
+        role: user.role,
       },
     };
   });
@@ -198,7 +202,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
     if (!request.user) {
       return reply.status(401).send({ error: "Not authenticated" });
     }
-    return { user: request.user };
+    return { user: request.user as AuthUser };
   });
 
   // POST /api/auth/password-reset/request
