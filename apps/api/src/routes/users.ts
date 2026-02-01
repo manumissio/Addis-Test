@@ -15,6 +15,7 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
       .select({
         id: users.id,
         username: users.username,
+        role: users.role,
         about: users.about,
         profession: users.profession,
         profileImageUrl: users.profileImageUrl,

@@ -18,7 +18,7 @@ export default function NewMessagePage() {
   if (!recipientId) {
     return (
       <div className="mx-auto max-w-2xl py-12 text-center">
-        <p className="text-gray-500">No recipient specified.</p>
+        <p className="text-gray-500 dark:text-gray-400">No recipient specified.</p>
       </div>
     );
   }
@@ -45,7 +45,7 @@ export default function NewMessagePage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">
-      <h1 className="text-xl font-bold text-gray-900">
+      <h1 className="text-xl font-bold text-gray-900 dark:text-white">
         Message {recipientUsername}
       </h1>
 

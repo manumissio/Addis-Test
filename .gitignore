@@ -14,3 +14,5 @@ user_images/*
 !user_images/.gitkeep
 idea_images/*
 !idea_images/.gitkeep
+uploads/*
+!uploads/.gitkeep

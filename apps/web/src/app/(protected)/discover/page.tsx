@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { api } from "@/lib/api";
 import { IdeaCard } from "@/components/idea-card";
 
@@ -131,42 +132,62 @@ export default function DiscoverPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Hero header */}
-      <div className="rounded-xl bg-gradient-to-r from-addis-dark to-addis-blue px-6 py-10 text-center text-white">
-        <h1 className="text-3xl font-bold">Discover Ideas</h1>
-        <p className="mt-2 text-white/80">Find ideas that inspire you or match your interests</p>
-
-        {/* Search form - grouped controls */}
-        <div className="mx-auto mt-8 flex w-full max-w-xl items-stretch overflow-hidden rounded-lg shadow-sm">
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            placeholder="Search ideas..."
-            className="flex-1 border-0 px-4 py-3 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-addis-orange"
-          />
-          <input
-            type="text"
-            value={topic}
-            onChange={(e) => setTopic(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            placeholder="Topic..."
-            className="w-32 border-l border-gray-200 px-3 py-3 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-addis-orange sm:w-40"
-          />
-          <button
-            onClick={handleSearch}
-            disabled={loading}
-            className="bg-addis-orange px-6 py-3 text-sm font-semibold text-white hover:bg-addis-orange/90 disabled:opacity-50"
-          >
-            {loading ? "..." : "Search"}
-          </button>
+    <div className="space-y-10">
+      {/* Search Terminal Hero */}
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative overflow-hidden rounded-sm bg-addis-dark px-6 py-16 text-center text-white shadow-2xl border-t-8 border-addis-blue"
+      >
+        {/* Background Polish */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute top-0 left-0 h-full w-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
+          <div className="absolute -top-24 -left-24 h-96 w-96 rounded-full bg-addis-blue/10 blur-3xl" />
+          <div className="absolute -bottom-24 -right-24 h-96 w-96 rounded-full bg-addis-orange/10 blur-3xl" />
         </div>
-        <p className="mt-3 text-sm text-white/70">
-          Try searching for <span className="text-white">&quot;community&quot;</span> or <span className="text-white">&quot;sustainability&quot;</span>
-        </p>
-      </div>
+
+        <div className="relative z-10">
+          <h1 className="text-4xl font-black tracking-tighter uppercase">Explore Ideas</h1>
+          <p className="mt-2 text-xs font-bold text-addis-silver uppercase tracking-[0.4em]">Search all proposals</p>
+
+          {/* High-Fidelity Search Form */}
+          <div className="mx-auto mt-12 flex w-full max-w-2xl flex-col gap-2 sm:flex-row sm:items-stretch sm:gap-0 overflow-hidden shadow-2xl">
+            <div className="flex-1 relative">
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                placeholder="KEYWORDS..."
+                className="w-full border-0 bg-white dark:bg-addis-dark/80 px-6 py-4 text-sm font-bold text-gray-900 dark:text-white placeholder:text-gray-300 focus:outline-none focus:ring-4 focus:ring-inset focus:ring-addis-blue/20 transition-all"
+              />
+            </div>
+            <div className="w-full sm:w-48 relative border-t sm:border-t-0 sm:border-l border-gray-100 dark:border-white/10">
+              <input
+                type="text"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                placeholder="TOPIC..."
+                className="w-full border-0 bg-white dark:bg-addis-dark/80 px-6 py-4 text-sm font-bold text-gray-900 dark:text-white placeholder:text-gray-300 focus:outline-none focus:ring-4 focus:ring-inset focus:ring-addis-blue/20 transition-all"
+              />
+            </div>
+            <button
+              onClick={handleSearch}
+              disabled={loading}
+              className="bg-addis-blue px-10 py-4 text-[11px] font-black uppercase tracking-[0.2em] text-white hover:bg-addis-orange transition-all active:scale-95 disabled:opacity-50 shadow-inner"
+            >
+              {loading ? "SEARCHING..." : "SEARCH"}
+            </button>
+          </div>
+          
+          <div className="mt-6 flex flex-wrap justify-center gap-4">
+             <button onClick={() => { setTopic("Sustainability"); handleSearch(); }} className="text-[9px] font-black text-white/40 hover:text-addis-orange transition-colors uppercase tracking-widest border-b border-white/10 pb-0.5">#Sustainability</button>
+             <button onClick={() => { setTopic("Technology"); handleSearch(); }} className="text-[9px] font-black text-white/40 hover:text-addis-orange transition-colors uppercase tracking-widest border-b border-white/10 pb-0.5">#Technology</button>
+             <button onClick={() => { setTopic("Infrastructure"); handleSearch(); }} className="text-[9px] font-black text-white/40 hover:text-addis-orange transition-colors uppercase tracking-widest border-b border-white/10 pb-0.5">#Infrastructure</button>
+          </div>
+        </div>
+      </motion.div>
 
       {/* Active filters */}
       {(query.trim() || topic.trim()) && searched && (

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, useEffect } from "react";
 import { api, ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
+import { ImageUpload } from "@/components/image-upload";
 import {
   usernameSchema,
   emailSchema,
@@ -19,9 +20,9 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8 py-10 px-4">
+    <div className="mx-auto max-w-3xl space-y-8 py-10 px-4 text-left">
       <div className="mb-10 border-b-8 border-addis-orange pb-6">
-        <h1 className="text-4xl font-bold text-addis-dark uppercase tracking-tight">Account Settings</h1>
+        <h1 className="text-4xl font-bold text-addis-dark dark:text-white uppercase tracking-tight">Account Settings</h1>
         <p className="mt-2 text-sm font-bold text-addis-green uppercase tracking-widest">Configuration & Security</p>
       </div>
 
@@ -31,6 +32,18 @@ export default function SettingsPage() {
           <p className="text-sm font-bold uppercase">{message.text}</p>
         </div>
       )}
+
+      {/* Profile Photo Card */}
+      <ProfilePhotoSection
+        currentImageUrl={user?.profileImageUrl}
+        onSuccess={() => { refresh(); showMessage("success", "Photo updated successfully!"); }}
+      />
+
+      {/* Profile Details Card */}
+      <ProfileDetailsSection
+        onSuccess={() => { refresh(); showMessage("success", "Profile updated successfully!"); }}
+        onError={(msg) => showMessage("error", msg)}
+      />
 
       {/* Username Card */}
       <UsernameSection
@@ -51,6 +64,133 @@ export default function SettingsPage() {
         onError={(msg) => showMessage("error", msg)}
       />
     </div>
+  );
+}
+
+function ProfilePhotoSection({
+  currentImageUrl,
+  onSuccess,
+}: {
+  currentImageUrl?: string | null;
+  onSuccess: () => void;
+}) {
+  async function handleImageRemove() {
+    try {
+      await api("/api/uploads/profile-image", { method: "DELETE" });
+      onSuccess();
+    } catch (e) {
+      console.error("Failed to remove photo", e);
+    }
+  }
+
+  return (
+    <section className="overflow-hidden bg-card-bg shadow-md border-t-4 border-addis-orange transition-colors">
+      <div className="border-b border-gray-100 dark:border-white/10 bg-gray-50/30 px-6 py-4">
+        <h2 className="text-sm font-bold text-addis-dark dark:text-white uppercase tracking-widest">Identity Visual</h2>
+        <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase">Your profile photograph for project attribution.</p>
+      </div>
+      <div className="p-6">
+        <ImageUpload
+          endpoint="/api/uploads/profile-image"
+          currentImageUrl={currentImageUrl}
+          onUploaded={onSuccess}
+          onRemoved={handleImageRemove}
+        />
+      </div>
+    </section>
+  );
+}
+
+function ProfileDetailsSection({
+  onSuccess,
+  onError,
+}: {
+  onSuccess: () => void;
+  onError: (msg: string) => void;
+}) {
+  const { user } = useAuth();
+  const [form, setForm] = useState({ about: "", profession: "" });
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    api<{ user: { about: string | null; profession: string | null } }>(
+      `/api/users/${encodeURIComponent(user.username)}`
+    ).then((data) => {
+      setForm({
+        about: data.user.about ?? "",
+        profession: data.user.profession ?? "",
+      });
+    });
+  }, [user]);
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await api("/api/users/profile", {
+        method: "PATCH",
+        body: {
+          about: form.about || undefined,
+          profession: form.profession || undefined,
+        },
+      });
+      onSuccess();
+    } catch (err) {
+      onError(err instanceof ApiError ? err.message : "Failed to update profile");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <section className="overflow-hidden bg-card-bg shadow-md border-t-4 border-addis-green transition-colors">
+      <div className="border-b border-gray-100 dark:border-white/10 bg-gray-50/30 px-6 py-4">
+        <h2 className="text-sm font-bold text-addis-dark dark:text-white uppercase tracking-widest">Professional Dossier</h2>
+        <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase">Public information about your expertise and vision.</p>
+      </div>
+      <div className="p-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <label htmlFor="profession" className="block text-xs font-bold text-gray-500 dark:text-gray-300 dark:text-gray-500 uppercase">
+              Current Profession
+            </label>
+            <input
+              id="profession"
+              type="text"
+              value={form.profession}
+              onChange={(e) => setForm({ ...form, profession: e.target.value })}
+              maxLength={255}
+              placeholder="E.G., STRUCTURAL ENGINEER"
+              className="w-full border-2 border-gray-100 dark:border-white/5 bg-white dark:bg-addis-dark text-gray-900 dark:text-white dark:text-white px-3 py-2 text-sm shadow-inner focus:border-addis-orange focus:outline-none"
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="about" className="block text-xs font-bold text-gray-500 dark:text-gray-300 dark:text-gray-500 uppercase">
+              Project Philosophy / About
+            </label>
+            <textarea
+              id="about"
+              value={form.about}
+              onChange={(e) => setForm({ ...form, about: e.target.value })}
+              rows={4}
+              maxLength={2000}
+              placeholder="DESCRIBE YOUR BACKGROUND AND WHAT DRIVES YOU..."
+              className="w-full border-2 border-gray-100 dark:border-white/5 bg-white dark:bg-addis-dark text-gray-900 dark:text-white dark:text-white px-3 py-2 text-sm shadow-inner focus:border-addis-orange focus:outline-none leading-relaxed"
+            />
+          </div>
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              disabled={saving}
+              className="btn-addis-green px-8 py-2 text-sm uppercase shadow-sm disabled:opacity-50"
+            >
+              {saving ? "SAVING..." : "SAVE DOSSIER"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
   );
 }
 
@@ -96,15 +236,15 @@ function UsernameSection({
   }
 
   return (
-    <section className="overflow-hidden bg-[#FFFFF3] shadow-md border-t-4 border-addis-yellow">
-      <div className="border-b border-gray-100 bg-gray-50/30 px-6 py-4">
-        <h2 className="text-sm font-bold text-addis-dark uppercase tracking-widest">Username</h2>
-        <p className="text-[10px] font-bold text-gray-400 uppercase">Your unique identifier on the platform.</p>
+    <section className="overflow-hidden bg-card-bg shadow-md border-t-4 border-addis-yellow transition-colors">
+      <div className="border-b border-gray-100 dark:border-white/10 bg-gray-50/30 px-6 py-4">
+        <h2 className="text-sm font-bold text-addis-dark dark:text-white uppercase tracking-widest">Username</h2>
+        <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase">Your unique identifier on the platform.</p>
       </div>
       <div className="p-6">
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:flex-row sm:items-end">
           <div className="flex-1">
-            <label htmlFor="username" className="block text-xs font-bold text-gray-500 uppercase mb-1">
+            <label htmlFor="username" className="block text-xs font-bold text-gray-500 dark:text-gray-300 dark:text-gray-500 uppercase mb-1">
               Username
             </label>
             <input
@@ -113,7 +253,7 @@ function UsernameSection({
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               maxLength={25}
-              className="mt-1 block w-full border-2 border-gray-100 bg-white px-3 py-2 text-sm shadow-inner focus:border-addis-orange focus:outline-none"
+              className="mt-1 block w-full border-2 border-gray-100 dark:border-white/10 bg-white dark:bg-addis-dark text-gray-900 dark:text-white dark:text-white px-3 py-2 text-sm shadow-inner focus:border-addis-orange focus:outline-none"
             />
           </div>
           <button
@@ -165,15 +305,15 @@ function EmailSection({
   }
 
   return (
-    <section className="overflow-hidden bg-[#FFFFF3] shadow-md border-t-4 border-addis-green">
-      <div className="border-b border-gray-100 bg-gray-50/30 px-6 py-4">
-        <h2 className="text-sm font-bold text-addis-dark uppercase tracking-widest">Email Address</h2>
-        <p className="text-[10px] font-bold text-gray-400 uppercase">Used for account notifications and recovery.</p>
+    <section className="overflow-hidden bg-card-bg shadow-md border-t-4 border-addis-green transition-colors">
+      <div className="border-b border-gray-100 dark:border-white/10 bg-gray-50/30 px-6 py-4">
+        <h2 className="text-sm font-bold text-addis-dark dark:text-white uppercase tracking-widest">Email Address</h2>
+        <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase">Used for account notifications and recovery.</p>
       </div>
       <div className="p-6">
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:flex-row sm:items-end">
           <div className="flex-1">
-            <label htmlFor="email" className="block text-xs font-bold text-gray-500 uppercase mb-1">
+            <label htmlFor="email" className="block text-xs font-bold text-gray-500 dark:text-gray-300 dark:text-gray-500 uppercase mb-1">
               New Email
             </label>
             <input
@@ -182,7 +322,7 @@ function EmailSection({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter new email address"
-              className="mt-1 block w-full border-2 border-gray-100 bg-white px-3 py-2 text-sm shadow-inner focus:border-addis-orange focus:outline-none"
+              className="mt-1 block w-full border-2 border-gray-100 dark:border-white/10 bg-white dark:bg-addis-dark text-gray-900 dark:text-white dark:text-white px-3 py-2 text-sm shadow-inner focus:border-addis-orange focus:outline-none"
             />
           </div>
           <button
@@ -247,16 +387,16 @@ function PasswordSection({
   }
 
   return (
-    <section className="overflow-hidden bg-[#FFFFF3] shadow-md border-t-4 border-addis-orange">
-      <div className="border-b border-gray-100 bg-gray-50/30 px-6 py-4">
-        <h2 className="text-sm font-bold text-addis-dark uppercase tracking-widest">Security</h2>
-        <p className="text-[10px] font-bold text-gray-400 uppercase">Update your password to keep your account secure.</p>
+    <section className="overflow-hidden bg-card-bg shadow-md border-t-4 border-addis-orange transition-colors">
+      <div className="border-b border-gray-100 dark:border-white/10 bg-gray-50/30 px-6 py-4">
+        <h2 className="text-sm font-bold text-addis-dark dark:text-white uppercase tracking-widest">Security</h2>
+        <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase">Update your password to keep your account secure.</p>
       </div>
       <div className="p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid gap-4 md:grid-cols-3">
             <div>
-              <label htmlFor="currentPassword" className="block text-xs font-bold text-gray-500 uppercase mb-1">
+              <label htmlFor="currentPassword" className="block text-xs font-bold text-gray-500 dark:text-gray-300 dark:text-gray-500 uppercase mb-1">
                 Current Password
               </label>
               <input
@@ -264,11 +404,11 @@ function PasswordSection({
                 type="password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                className="mt-1 block w-full border-2 border-gray-100 bg-white px-3 py-2 text-sm shadow-inner focus:border-addis-orange focus:outline-none"
+                className="mt-1 block w-full border-2 border-gray-100 dark:border-white/10 bg-white dark:bg-addis-dark text-gray-900 dark:text-white dark:text-white px-3 py-2 text-sm shadow-inner focus:border-addis-orange focus:outline-none"
               />
             </div>
             <div>
-              <label htmlFor="newPassword" className="block text-xs font-bold text-gray-500 uppercase mb-1">
+              <label htmlFor="newPassword" className="block text-xs font-bold text-gray-500 dark:text-gray-300 dark:text-gray-500 uppercase mb-1">
                 New Password
               </label>
               <input
@@ -276,11 +416,11 @@ function PasswordSection({
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="mt-1 block w-full border-2 border-gray-100 bg-white px-3 py-2 text-sm shadow-inner focus:border-addis-orange focus:outline-none"
+                className="mt-1 block w-full border-2 border-gray-100 dark:border-white/10 bg-white dark:bg-addis-dark text-gray-900 dark:text-white dark:text-white px-3 py-2 text-sm shadow-inner focus:border-addis-orange focus:outline-none"
               />
             </div>
             <div>
-              <label htmlFor="confirmPassword" className="block text-xs font-bold text-gray-500 uppercase mb-1">
+              <label htmlFor="confirmPassword" className="block text-xs font-bold text-gray-500 dark:text-gray-300 dark:text-gray-500 uppercase mb-1">
                 Confirm Password
               </label>
               <input
@@ -288,7 +428,7 @@ function PasswordSection({
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="mt-1 block w-full border-2 border-gray-100 bg-white px-3 py-2 text-sm shadow-inner focus:border-addis-orange focus:outline-none"
+                className="mt-1 block w-full border-2 border-gray-100 dark:border-white/10 bg-white dark:bg-addis-dark text-gray-900 dark:text-white dark:text-white px-3 py-2 text-sm shadow-inner focus:border-addis-orange focus:outline-none"
               />
             </div>
           </div>

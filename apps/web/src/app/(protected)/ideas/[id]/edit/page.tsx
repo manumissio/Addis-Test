@@ -130,11 +130,11 @@ export default function EditIdeaPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-8">
-      <h1 className="text-xl font-bold text-gray-900">Edit Idea</h1>
+      <h1 className="text-xl font-bold text-gray-900 dark:text-white">Edit Idea</h1>
 
       {/* Image upload */}
       <section>
-        <h2 className="mb-2 text-sm font-semibold text-gray-700">Idea Image</h2>
+        <h2 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">Idea Image</h2>
         <ImageUpload
           endpoint={`/api/uploads/idea-image/${ideaId}`}
           currentImageUrl={idea.imageUrl}
@@ -151,7 +151,7 @@ export default function EditIdeaPage() {
         )}
 
         <div>
-          <label htmlFor="title" className="mb-1 block text-sm font-medium text-gray-700">
+          <label htmlFor="title" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
             Title
           </label>
           <input
@@ -165,7 +165,7 @@ export default function EditIdeaPage() {
         </div>
 
         <div>
-          <label htmlFor="description" className="mb-1 block text-sm font-medium text-gray-700">
+          <label htmlFor="description" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
             Description
           </label>
           <textarea
@@ -178,7 +178,7 @@ export default function EditIdeaPage() {
         </div>
 
         <fieldset>
-          <legend className="mb-2 text-sm font-medium text-gray-700">Location</legend>
+          <legend className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Location</legend>
           <div className="grid grid-cols-3 gap-3">
             <input
               type="text"
@@ -218,7 +218,7 @@ export default function EditIdeaPage() {
           <button
             type="button"
             onClick={() => router.push(`/ideas/${ideaId}`)}
-            className="rounded-md border border-gray-300 px-6 py-2 text-sm text-gray-600 hover:bg-gray-50"
+            className="rounded-md border border-gray-300 px-6 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50"
           >
             Cancel
           </button>
@@ -227,7 +227,7 @@ export default function EditIdeaPage() {
 
       {/* Topics */}
       <section>
-        <h2 className="mb-2 text-sm font-semibold text-gray-700">Topics</h2>
+        <h2 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">Topics</h2>
         <TopicManager
           topics={topics}
           addEndpoint={`/api/ideas/${ideaId}/topics`}
@@ -241,7 +241,7 @@ export default function EditIdeaPage() {
 
       {/* Addressed To */}
       <section>
-        <h2 className="mb-2 text-sm font-semibold text-gray-700">Addressed To</h2>
+        <h2 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">Addressed To</h2>
         <TopicManager
           topics={addressedTo}
           addEndpoint={`/api/ideas/${ideaId}/addressed-to`}

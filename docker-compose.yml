@@ -21,17 +21,25 @@ services:
       target: api
     ports:
       - "3001:3001"
+    volumes:
+      - .:/app
+      - ./uploads:/app/uploads
+      - /app/node_modules
+      - /app/apps/api/node_modules
+      - /app/apps/web/node_modules
+      - /app/packages/db/node_modules
+      - /app/packages/shared/node_modules
     environment:
       DATABASE_URL: postgresql://user:password@db:5432/addisideas
       API_PORT: 3001
       API_HOST: 0.0.0.0
       CORS_ORIGIN: http://localhost:3000
-      NODE_ENV: production
+      NODE_ENV: development
       AUTH_SECRET: dev-secret-do-not-use-in-production
     depends_on:
       db:
         condition: service_healthy
-    command: /bin/sh -c "pnpm --filter @addis/db db:migrate && pnpm --filter @addis/api start"
+    command: /bin/sh -c "pnpm --filter @addis/db db:migrate && pnpm --filter @addis/api dev"
 
   web:
     build:
@@ -39,12 +47,20 @@ services:
       target: web
     ports:
       - "3000:3000"
+    volumes:
+      - .:/app
+      - ./uploads:/app/uploads
+      - /app/node_modules
+      - /app/apps/api/node_modules
+      - /app/apps/web/node_modules
+      - /app/packages/db/node_modules
+      - /app/packages/shared/node_modules
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:3001
-      NODE_ENV: production
+      NODE_ENV: development
     depends_on:
       - api
-    command: pnpm --filter @addis/web start
+    command: pnpm --filter @addis/web dev
 
 volumes:
   postgres_data:

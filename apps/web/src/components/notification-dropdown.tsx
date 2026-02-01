@@ -80,7 +80,7 @@ export function NotificationDropdown() {
     <motion.li
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
-      className={`p-4 transition-colors ${n.isRead ? "bg-white" : "bg-orange-50/30"}`}
+      className={`p-4 transition-colors ${n.isRead ? "bg-white dark:bg-addis-dark" : "bg-orange-50/30 dark:bg-addis-orange/5"}`}
     >
       <Link
         href={n.link || "#"}
@@ -90,7 +90,7 @@ export function NotificationDropdown() {
         }}
         className="flex gap-3"
       >
-        <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-gray-100 ring-2 ring-white shadow-sm">
+        <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-gray-100 dark:bg-white/5 ring-2 ring-white dark:ring-white/10 shadow-sm">
           {n.sender?.profileImageUrl ? (
             <img
               src={getAssetUrl(n.sender.profileImageUrl)!}
@@ -98,17 +98,17 @@ export function NotificationDropdown() {
               className="h-full w-full object-cover"
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-addis-dark text-[10px] font-bold text-white">
+            <div className="flex h-full w-full items-center justify-center bg-addis-dark dark:bg-white/10 text-[10px] font-black text-white">
               {n.sender?.username.slice(0, 2).toUpperCase() || "??"}
             </div>
           )}
         </div>
         <div className="flex-1">
-          <p className="text-sm text-gray-900 leading-snug">
-            <span className="font-bold">@{n.sender?.username.toUpperCase() || "SOMEONE"}</span>{" "}
-            <span className="text-gray-600">{n.message}</span>
+          <p className="text-[13px] text-gray-900 dark:text-gray-100 leading-snug">
+            <span className="font-black text-addis-dark dark:text-white uppercase tracking-tighter">@{n.sender?.username.toUpperCase() || "SYSTEM"}</span>{" "}
+            <span className="font-medium text-gray-600 dark:text-gray-400">{n.message}</span>
           </p>
-          <p className="mt-1 text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
+          <p className="mt-1 text-[9px] font-black text-gray-400 dark:text-white/20 uppercase tracking-tighter tabular-nums">
             {new Date(n.createdAt).toLocaleDateString()}
           </p>
         </div>
@@ -144,15 +144,15 @@ export function NotificationDropdown() {
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute right-0 mt-3 w-80 origin-top-right rounded-sm bg-white shadow-2xl ring-1 ring-black/5 focus:outline-none z-[100] overflow-hidden"
+            className="absolute right-0 mt-3 w-80 origin-top-right rounded-sm bg-card-bg shadow-2xl ring-1 ring-black/10 dark:ring-white/10 focus:outline-none z-[100] overflow-hidden border-t-8 border-addis-orange transition-colors"
           >
-            <div className="bg-addis-dark px-4 py-3">
+            <div className="bg-addis-orange px-4 py-4 border-b border-white/10">
               <div className="flex items-center justify-between">
-                <h3 className="text-xs font-bold text-white uppercase tracking-widest">Notifications</h3>
+                <h3 className="text-[11px] font-black text-white uppercase tracking-[0.3em]">Update Stream</h3>
                 {unreadCount > 0 && (
                   <button
                     onClick={() => api("/api/notifications/read-all", { method: "PATCH" }).then(() => { setNotifications(notifications.map(n => ({...n, isRead: true}))); setUnreadCount(0); })}
-                    className="text-[10px] font-bold text-addis-orange hover:text-addis-yellow transition-colors uppercase"
+                    className="text-[10px] font-black text-white/80 hover:text-white transition-colors uppercase tracking-widest underline decoration-2 underline-offset-4"
                   >
                     Clear All
                   </button>
@@ -160,15 +160,18 @@ export function NotificationDropdown() {
               </div>
             </div>
 
-            <div className="max-h-[30rem] overflow-y-auto bg-[#fdfdfd]">
+            <div className="max-h-[30rem] overflow-y-auto bg-[#FFFFF3] dark:bg-addis-dark transition-colors">
               {notifications.length > 0 ? (
-                <div className="divide-y divide-gray-100">
+                <div className="divide-y divide-gray-100 dark:divide-white/5">
                   {actionRequired.length > 0 && (
                     <div>
-                      <div className="bg-orange-50/50 px-4 py-1.5">
-                        <span className="text-[10px] font-bold text-addis-orange uppercase tracking-tight">Action Required</span>
+                      <div className="bg-addis-green/10 dark:bg-addis-green/5 px-4 py-2 border-b border-addis-green/10">
+                        <span className="text-[9px] font-black text-addis-green uppercase tracking-widest flex items-center gap-2">
+                          <span className="h-1.5 w-1.5 rounded-full bg-addis-green animate-pulse" />
+                          High Priority
+                        </span>
                       </div>
-                      <ul className="divide-y divide-gray-50">
+                      <ul className="divide-y divide-gray-50 dark:divide-white/5">
                         {actionRequired.map(n => <NotificationItem key={n.id} n={n} />)}
                       </ul>
                     </div>
@@ -176,10 +179,13 @@ export function NotificationDropdown() {
                   
                   {generalActivity.length > 0 && (
                     <div>
-                      <div className="bg-gray-50/50 px-4 py-1.5">
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">Recent Activity</span>
+                      <div className="bg-addis-yellow/10 dark:bg-addis-yellow/5 px-4 py-2 border-b border-addis-yellow/10">
+                        <span className="text-[9px] font-black text-addis-orange uppercase tracking-widest flex items-center gap-2">
+                          <span className="h-1.5 w-1.5 rounded-full bg-addis-yellow" />
+                          Network Activity
+                        </span>
                       </div>
-                      <ul className="divide-y divide-gray-50">
+                      <ul className="divide-y divide-gray-50 dark:divide-white/5">
                         {generalActivity.map(n => <NotificationItem key={n.id} n={n} />)}
                       </ul>
                     </div>
@@ -187,13 +193,13 @@ export function NotificationDropdown() {
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-                  <div className="rounded-full bg-gray-50 p-4 mb-4 ring-8 ring-gray-50/50">
-                    <svg className="h-8 w-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className="rounded-full bg-white dark:bg-white/5 p-4 mb-4 shadow-sm">
+                    <svg className="h-8 w-8 text-addis-orange/20 dark:text-white/10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                     </svg>
                   </div>
-                  <p className="text-sm font-bold text-addis-dark uppercase">All caught up!</p>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase mt-1">No new alerts to show</p>
+                  <p className="text-xs font-black text-addis-dark dark:text-white uppercase tracking-tighter">System Idle</p>
+                  <p className="text-[9px] font-bold text-gray-400 dark:text-white/20 uppercase tracking-[0.2em] mt-1">Listening for signals...</p>
                 </div>
               )}
             </div>
@@ -201,9 +207,9 @@ export function NotificationDropdown() {
             <Link
               href="/notifications"
               onClick={() => setIsOpen(false)}
-              className="block bg-gray-50 py-3 text-center text-[10px] font-bold text-gray-500 hover:bg-addis-orange hover:text-white transition-all uppercase tracking-widest border-t border-gray-100"
+              className="block bg-white dark:bg-black/20 py-4 text-center text-[10px] font-black text-addis-dark dark:text-white/60 hover:bg-addis-orange hover:text-white transition-all uppercase tracking-[0.3em] border-t border-gray-100 dark:border-white/10"
             >
-              See All Notifications
+              Access Full Log
             </Link>
           </motion.div>
         )}

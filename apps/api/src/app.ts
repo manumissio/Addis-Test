@@ -16,6 +16,7 @@ import { messagesRoutes } from "./routes/messages";
 import { uploadsRoutes } from "./routes/uploads";
 import { notificationsRoutes } from "./routes/notifications";
 import { sponsorshipsRoutes } from "./routes/sponsorships";
+import { systemRoutes } from "./routes/system";
 import { errorHandler } from "./utils/errors";
 
 export async function buildApp() {
@@ -82,6 +83,7 @@ export async function buildApp() {
   await app.register(uploadsRoutes, { prefix: "/api/uploads" });
   await app.register(notificationsRoutes, { prefix: "/api/notifications" });
   await app.register(sponsorshipsRoutes, { prefix: "/api/sponsorships" });
+  await app.register(systemRoutes, { prefix: "/api/system" });
 
   // Health check
   app.get("/api/health", async () => ({ status: "ok" }));

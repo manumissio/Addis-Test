@@ -60,6 +60,9 @@ export function ImageUpload({
       const res = await fetch(`${API_URL}${endpoint}`, {
         method: "POST",
         body: formData,
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+        },
         credentials: "include",
       });
 

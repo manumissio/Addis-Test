@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback, type FormEvent } from "react";
+import { useEffect, useState, useCallback, useRef, type FormEvent } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import { api, ApiError, getAssetUrl } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 
@@ -116,7 +117,6 @@ export default function IdeaDetailPage() {
         );
       }
     } catch (err) {
-      // On 409 conflict, we're out of sync with server - fetch fresh data
       if (err instanceof ApiError && err.status === 409) {
         const fresh = await api<{
           idea: IdeaDetail;
@@ -148,7 +148,6 @@ export default function IdeaDetailPage() {
         setIdea((prev) =>
           prev ? { ...prev, collaboratorsCount: prev.collaboratorsCount + 1 } : prev
         );
-        // Add current user to local collaborators list
         if (user) {
           setCollaborators((prev) => [
             ...prev,
@@ -163,7 +162,6 @@ export default function IdeaDetailPage() {
         }
       }
     } catch (err) {
-      // On 409 conflict, we're out of sync with server - fetch fresh data
       if (err instanceof ApiError && err.status === 409) {
         const [fresh, collabData] = await Promise.all([
           api<{ idea: IdeaDetail; isLiked: boolean; isCollaborating: boolean }>(`/api/ideas/${ideaId}`),
@@ -229,7 +227,7 @@ export default function IdeaDetailPage() {
   }
 
   if (error || !idea) {
-    return <p className="py-12 text-center text-red-600">{error || "Idea not found"}</p>;
+    return <p className="py-12 text-center text-red-600 uppercase font-black text-xs tracking-[0.2em]">{error || "Idea not found"}</p>;
   }
 
   const isOwner = user?.id === idea.creatorId;
@@ -238,306 +236,290 @@ export default function IdeaDetailPage() {
     .join(", ");
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      {/* Creator header */}
-      <div className="flex items-center justify-between">
-        <Link
-          href={`/profile/${idea.creatorUsername}`}
-          className="flex items-center gap-3"
-        >
-          <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-gray-200">
+    <div className="mx-auto max-w-6xl pb-24">
+      {/* Immersive Cinematic Hero */}
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="relative mb-12 h-[500px] w-full overflow-hidden rounded-sm bg-addis-dark shadow-2xl border-t-8 border-addis-orange"
+      >
+        {idea.imageUrl ? (
+          <>
             <img
-              src={getAssetUrl(idea.creatorImageUrl) ?? "/images/default_user.jpg"}
-              alt={idea.creatorUsername}
-              className="h-full w-full object-cover"
+              src={getAssetUrl(idea.imageUrl)!}
+              alt={idea.title}
+              className="h-full w-full object-cover opacity-60 mix-blend-luminosity grayscale"
             />
-          </div>
-          <div>
-            <span className="text-sm font-medium text-gray-700 hover:text-addis-orange">
-              {idea.creatorUsername}
-            </span>
-            <p className="text-xs text-gray-400">
-              {new Date(idea.createdAt).toLocaleDateString()}
-            </p>
-          </div>
-        </Link>
-
-        {isOwner && (
-          <div className="flex gap-2">
-            <Link
-              href={`/ideas/${idea.id}/edit`}
-              className="rounded-md border border-gray-300 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50"
-            >
-              Edit
-            </Link>
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              className="rounded-md border border-red-300 px-3 py-1.5 text-xs text-red-600 hover:bg-red-50"
-            >
-              Delete
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Delete confirmation */}
-      {showDeleteConfirm && (
-        <div className="rounded-md border border-red-200 bg-red-50 p-4">
-          <p className="text-sm text-red-700">
-            Are you sure you want to delete this idea? This cannot be undone.
-          </p>
-          <div className="mt-3 flex gap-2">
-            <button
-              onClick={handleDelete}
-              disabled={deleting}
-              className="rounded-md bg-red-600 px-4 py-1.5 text-xs text-white hover:bg-red-700 disabled:opacity-50"
-            >
-              {deleting ? "Deleting..." : "Yes, delete"}
-            </button>
-            <button
-              onClick={() => setShowDeleteConfirm(false)}
-              className="rounded-md border border-gray-300 px-4 py-1.5 text-xs text-gray-600 hover:bg-gray-50"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Idea content */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">{idea.title}</h1>
-        {location && (
-          <p className="mt-1 text-sm text-gray-400">{location}</p>
-        )}
-      </div>
-
-      {idea.imageUrl && (
-        <img
-          src={getAssetUrl(idea.imageUrl)!}
-          alt={idea.title}
-          className="w-full rounded-lg object-cover"
-        />
-      )}
-
-      <div className="whitespace-pre-wrap text-sm leading-relaxed text-gray-700">
-        {idea.description}
-      </div>
-
-      {/* Topics */}
-      {topics.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {topics.map((topic) => (
-            <Link
-              key={topic}
-              href={`/discover?topic=${encodeURIComponent(topic)}`}
-              className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600 hover:bg-gray-200"
-            >
-              {topic}
-            </Link>
-          ))}
-        </div>
-      )}
-
-      {/* Addressed to */}
-      {addressedTo.length > 0 && (
-        <div>
-          <p className="mb-1 text-xs font-medium text-gray-500">Addressed to:</p>
-          <div className="flex flex-wrap gap-2">
-            {addressedTo.map((s) => (
-              <span
-                key={s}
-                className="rounded-full bg-addis-green/10 px-3 py-1 text-xs text-addis-green"
-              >
-                {s}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Stats + actions bar */}
-      <div className="flex flex-wrap items-center gap-4 border-y py-3">
-        <button
-          onClick={handleLike}
-          disabled={isLiking}
-          className={`flex items-center gap-1.5 text-sm transition-opacity ${
-            liked
-              ? "font-medium text-addis-orange"
-              : "text-gray-500 hover:text-addis-orange"
-          } ${isLiking ? "opacity-50 cursor-not-allowed" : ""}`}
-        >
-          {isLiking ? (
-            <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-            </svg>
-          ) : (
-            <svg
-              className="h-5 w-5"
-              fill={liked ? "currentColor" : "none"}
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-              />
-            </svg>
-          )}
-          {idea.likesCount} {idea.likesCount === 1 ? "like" : "likes"}
-        </button>
-
-        {!isOwner && (
-          <button
-            onClick={handleCollaborate}
-            disabled={isCollaborating}
-            className={`flex items-center gap-1.5 text-sm transition-opacity ${
-              collaborating
-                ? "font-medium text-addis-green"
-                : "text-gray-500 hover:text-addis-green"
-            } ${isCollaborating ? "opacity-50 cursor-not-allowed" : ""}`}
-          >
-            {isCollaborating ? (
-              <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-              </svg>
-            ) : (
-              <svg
-                className="h-5 w-5"
-                fill={collaborating ? "currentColor" : "none"}
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-              </svg>
-            )}
-            {collaborating ? "Leave" : "Collaborate"}
-          </button>
-        )}
-
-        <span className="flex items-center gap-1.5 text-sm text-gray-500">
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-            />
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-            />
-          </svg>
-          {idea.viewsCount} views
-        </span>
-      </div>
-
-      {/* Collaborators section */}
-      {collaborators.length > 0 && (
-        <section>
-          <h2 className="mb-3 text-sm font-semibold text-gray-700">
-            Collaborators ({idea.collaboratorsCount})
-          </h2>
-          <div className="flex flex-wrap gap-3">
-            {collaborators.map((collab) => (
-              <Link
-                key={collab.userId}
-                href={`/profile/${collab.username}`}
-                className="flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm hover:bg-gray-50"
-              >
-                <div className="h-6 w-6 shrink-0 overflow-hidden rounded-full bg-gray-200">
-                  <img
-                    src={getAssetUrl(collab.profileImageUrl) ?? "/images/default_user.jpg"}
-                    alt={collab.username}
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-                <span className="text-gray-700">{collab.username}</span>
-                {collab.isAdmin && (
-                  <span className="rounded bg-addis-orange/10 px-1.5 py-0.5 text-[10px] font-medium text-addis-orange">
-                    Creator
-                  </span>
-                )}
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Comments section */}
-      <section>
-        <h2 className="mb-4 text-sm font-semibold text-gray-700">
-          Comments ({idea.commentsCount})
-        </h2>
-
-        {/* Comment form */}
-        <form onSubmit={handlePostComment} className="mb-6">
-          <textarea
-            value={commentText}
-            onChange={(e) => setCommentText(e.target.value)}
-            rows={3}
-            maxLength={5000}
-            placeholder="Share your thoughts..."
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-addis-orange focus:outline-none focus:ring-1 focus:ring-addis-orange"
-          />
-          {commentError && (
-            <p className="mt-1 text-xs text-red-600">{commentError}</p>
-          )}
-          <button
-            type="submit"
-            disabled={postingComment || !commentText.trim()}
-            className="mt-2 rounded-md bg-addis-orange px-4 py-1.5 text-sm text-white hover:bg-addis-orange/90 disabled:opacity-50"
-          >
-            {postingComment ? "Posting..." : "Post Comment"}
-          </button>
-        </form>
-
-        {/* Comments list */}
-        {comments.length === 0 ? (
-          <p className="text-sm text-gray-400">No comments yet. Be the first!</p>
+            <div className="absolute inset-0 bg-gradient-to-t from-addis-dark via-addis-dark/40 to-transparent" />
+          </>
         ) : (
-          <div className="space-y-4">
-            {comments.map((comment) => (
-              <div key={comment.id} className="flex gap-3">
-                <Link href={`/profile/${comment.username}`}>
-                  <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-gray-200">
-                    <img
-                      src={getAssetUrl(comment.profileImageUrl) ?? "/images/default_user.jpg"}
-                      alt={comment.username}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                </Link>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <Link
-                      href={`/profile/${comment.username}`}
-                      className="text-sm font-medium text-gray-700 hover:text-addis-orange"
-                    >
-                      {comment.username}
-                    </Link>
-                    <span className="text-xs text-gray-400">
-                      {new Date(comment.createdAt).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <p className="mt-1 whitespace-pre-wrap text-sm text-gray-600">
-                    {comment.content}
-                  </p>
-                </div>
-              </div>
-            ))}
+          <div className="flex h-full w-full items-center justify-center opacity-10 grayscale invert text-white">
+             <img src="/images/logo.png" className="h-32 brightness-0 invert" alt="" />
           </div>
         )}
-      </section>
+
+        {/* Floating Header Info */}
+        <div className="absolute bottom-0 left-0 w-full p-8 sm:p-16">
+          <div className="flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
+            <div className="flex-1 text-left">
+              <div className="mb-6 flex items-center gap-3">
+                 <span className="bg-addis-green px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-xl">PROPOSAL_V1</span>
+                 <span className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em] tabular-nums">{new Date(idea.createdAt).toLocaleDateString("en-US", { month: 'long', year: 'numeric' })}</span>
+              </div>
+              <h1 className="text-4xl font-black text-white uppercase tracking-tighter sm:text-7xl leading-[0.9]">
+                {idea.title}
+              </h1>
+              {location && (
+                <p className="mt-6 text-[11px] font-black text-addis-orange uppercase tracking-[0.4em] flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-addis-orange animate-pulse" /> {location}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* War Room Layout: Split Strategy */}
+      <div className="grid gap-16 lg:grid-cols-12 px-4 sm:px-0">
+        
+        {/* LEFT: Strategic Intelligence (65%) */}
+        <div className="lg:col-span-8 space-y-16">
+          
+          {/* Executive Summary Module */}
+          <section className="bg-card-bg p-10 shadow-2xl border-l-8 border-addis-yellow transition-colors text-left relative">
+            <div className="absolute top-0 right-0 p-6 opacity-5 dark:invert">
+               <img src="/images/logo.png" className="h-16 grayscale" alt="" />
+            </div>
+            <h2 className="mb-8 inline-block border-b-2 border-addis-dark/10 text-[12px] font-black text-addis-dark dark:text-white uppercase tracking-[0.4em]">Strategic Summary</h2>
+            <div className="whitespace-pre-wrap text-lg leading-[1.8] text-gray-700 dark:text-gray-200 font-medium">
+              {idea.description}
+            </div>
+          </section>
+
+          {/* Strategic Impact Map */}
+          <div className="grid gap-10 sm:grid-cols-2 text-left">
+            <section className="bg-white dark:bg-addis-dark p-8 shadow-md border-t-2 border-gray-100 dark:border-white/5">
+              <h2 className="mb-6 text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.3em]">Strategic Impact Areas</h2>
+              <div className="flex flex-wrap gap-3">
+                {topics.map((topic) => (
+                  <Link
+                    key={topic}
+                    href={`/discover?topic=${encodeURIComponent(topic)}`}
+                    className="border-2 border-gray-100 dark:border-white/10 bg-white dark:bg-transparent px-5 py-2 text-[10px] font-black text-addis-dark dark:text-white uppercase tracking-widest hover:border-addis-orange transition-all shadow-sm"
+                  >
+                    #{topic}
+                  </Link>
+                ))}
+              </div>
+            </section>
+
+            <section className="bg-white dark:bg-addis-dark p-8 shadow-md border-t-2 border-gray-100 dark:border-white/5">
+              <h2 className="mb-6 text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.3em]">Governance & Stakeholders</h2>
+              <div className="flex flex-wrap gap-3">
+                {addressedTo.map((s) => (
+                  <span
+                    key={s}
+                    className="bg-addis-green/10 dark:bg-addis-green/5 px-5 py-2 text-[10px] font-black text-addis-green uppercase tracking-widest border border-addis-green/20 shadow-sm"
+                  >
+                    {s}
+                  </span>
+                ))}
+              </div>
+            </section>
+          </div>
+
+          {/* Discussion Area */}
+          <section className="pt-16 border-t-2 border-gray-100 dark:border-white/5 text-left">
+            <div className="flex items-center justify-between mb-10">
+               <div>
+                 <h2 className="text-lg font-black text-addis-dark dark:text-white uppercase tracking-[0.2em]">Project Discussion</h2>
+                 <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mt-1">Activity Log // {idea.commentsCount} Entries</p>
+               </div>
+            </div>
+
+            {/* Slick Terminal Input */}
+            <form onSubmit={handlePostComment} className="mb-12 bg-white dark:bg-addis-dark p-8 shadow-xl border-2 border-gray-100 dark:border-white/5">
+              <textarea
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                rows={4}
+                maxLength={5000}
+                placeholder="PROVIDE FEEDBACK OR CONSTRUCTIVE CRITIQUE..."
+                className="w-full bg-gray-50 dark:bg-black/20 border-2 border-gray-100 dark:border-white/5 px-5 py-4 text-sm font-bold text-gray-900 dark:text-white placeholder:text-gray-300 focus:border-addis-orange focus:outline-none transition-all resize-none"
+              />
+              <div className="mt-6 flex items-center justify-between">
+                 <span className="flex items-center gap-2 text-[9px] font-black text-addis-green uppercase tracking-widest">
+                    <span className="h-1.5 w-1.5 rounded-full bg-addis-green animate-pulse" />
+                    Verified Connection
+                 </span>
+                 <button
+                  type="submit"
+                  disabled={postingComment || !commentText.trim()}
+                  className="btn-addis-orange px-10 py-3 text-[11px] shadow-2xl disabled:opacity-50"
+                >
+                  {postingComment ? "SENDING..." : "POST FEEDBACK"}
+                </button>
+              </div>
+            </form>
+
+            <div className="space-y-10">
+              {comments.map((comment) => (
+                <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} key={comment.id} className="flex gap-6 border-b border-gray-50 dark:border-white/5 pb-10 last:border-0 group">
+                  <Link href={`/profile/${comment.username}`}>
+                    <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full bg-white ring-4 ring-white shadow-xl dark:ring-addis-dark group-hover:ring-addis-orange transition-all">
+                      <img
+                        src={getAssetUrl(comment.profileImageUrl) ?? "/images/default_user.jpg"}
+                        alt={comment.username}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  </Link>
+                  <div className="flex-1 text-left">
+                    <div className="flex items-center gap-4 mb-2">
+                      <Link
+                        href={`/profile/${comment.username}`}
+                        className="text-sm font-black text-addis-dark dark:text-white uppercase tracking-wider hover:text-addis-orange transition-colors"
+                      >
+                        @{comment.username.toUpperCase()}
+                      </Link>
+                      <span className="text-[10px] font-black text-gray-300 dark:text-white/10 uppercase tabular-nums">
+                        {new Date(comment.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className="text-[15px] font-medium leading-[1.6] text-gray-600 dark:text-gray-300 whitespace-pre-wrap max-w-2xl">
+                      {comment.content}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </section>
+        </div>
+
+        {/* RIGHT: Tactical Control (35%) */}
+        <div className="lg:col-span-4 space-y-12 text-left">
+          
+          {/* Persistent Action Hub */}
+          <div className="bg-addis-dark p-10 shadow-[0_30px_60px_-12px_rgba(0,0,0,0.5)] border-t-8 border-addis-blue lg:sticky lg:top-24 z-20">
+             <div className="space-y-5">
+                <button
+                  onClick={handleLike}
+                  disabled={isLiking}
+                  className={`w-full py-5 text-[12px] font-black uppercase tracking-[0.3em] transition-all shadow-2xl flex items-center justify-center gap-4 ${
+                    liked
+                      ? "bg-addis-orange text-white ring-4 ring-addis-orange/20"
+                      : "bg-white/5 text-white hover:bg-white/10 border border-white/10"
+                  }`}
+                >
+                  <svg className="h-5 w-5" fill={liked ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  </svg>
+                  {liked ? "ENDORSED" : "ENDORSE PROPOSAL"}
+                </button>
+
+                {!isOwner && (
+                  <button
+                    onClick={handleCollaborate}
+                    disabled={isCollaborating}
+                    className={`w-full py-5 text-[12px] font-black uppercase tracking-[0.3em] transition-all shadow-2xl flex items-center justify-center gap-4 ${
+                      collaborating
+                        ? "bg-addis-green text-white ring-4 ring-addis-green/20"
+                        : "bg-white/5 text-white hover:bg-white/10 border border-white/10"
+                    }`}
+                  >
+                    <svg className="h-5 w-5" fill={collaborating ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    {collaborating ? "TEAM_ACTIVE" : "JOIN PROJECT"}
+                  </button>
+                )}
+             </div>
+
+             {/* Network Stats Overlay */}
+             <div className="mt-8 grid grid-cols-2 gap-4 border-t border-white/10 pt-8">
+                <div className="text-center">
+                   <span className="block text-2xl font-black text-white tabular-nums">{idea.viewsCount}</span>
+                   <span className="text-[8px] font-black text-white/30 uppercase tracking-widest">Global Reach</span>
+                </div>
+                <div className="text-center border-l border-white/10">
+                   <span className="block text-2xl font-black text-white tabular-nums">{idea.collaboratorsCount}</span>
+                   <span className="text-[8px] font-black text-white/30 uppercase tracking-widest">Active Core</span>
+                </div>
+             </div>
+
+             {isOwner && (
+               <div className="mt-10 flex flex-col gap-3">
+                  <Link href={`/ideas/${idea.id}/edit`} className="text-center bg-white/5 hover:bg-white/10 py-4 text-[10px] font-black text-white/60 uppercase tracking-[0.2em] transition-colors border border-white/5 shadow-inner">
+                    Project Settings
+                  </Link>
+                  <button onClick={() => setShowDeleteConfirm(true)} className="py-2 text-[9px] font-black text-addis-red/40 hover:text-addis-red uppercase tracking-widest transition-colors">
+                    Remove Proposal
+                  </button>
+               </div>
+             )}
+          </div>
+
+          {/* Project Team */}
+          <section className="bg-white dark:bg-addis-dark p-10 shadow-xl border-t-4 border-addis-green transition-colors">
+            <h2 className="mb-8 text-[11px] font-black text-addis-dark dark:text-white uppercase tracking-[0.4em]">Project Team</h2>
+            <div className="space-y-6">
+              <Link href={`/profile/${idea.creatorUsername}`} className="flex items-center gap-5 group bg-gray-50 dark:bg-white/5 p-4 rounded-sm border border-gray-100 dark:border-white/5 shadow-sm">
+                <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full ring-4 ring-addis-orange ring-offset-4 dark:ring-offset-addis-dark bg-white">
+                   <img src={getAssetUrl(idea.creatorImageUrl) ?? "/images/default_user.jpg"} className="h-full w-full object-cover" alt="" />
+                </div>
+                <div className="flex flex-col">
+                   <span className="text-xs font-black text-addis-dark dark:text-white uppercase tracking-tight group-hover:text-addis-orange transition-colors">@{idea.creatorUsername.toUpperCase()}</span>
+                   <span className="text-[9px] font-black text-addis-orange uppercase tracking-widest mt-0.5">Project Director</span>
+                </div>
+              </Link>
+
+              <div className="grid grid-cols-4 gap-3 pt-4">
+                {collaborators.filter(c => !c.isAdmin).map((collab) => (
+                  <Link key={collab.userId} href={`/profile/${collab.username}`} title={collab.username}>
+                    <div className="h-12 w-12 overflow-hidden rounded-full ring-2 ring-gray-100 dark:ring-white/5 ring-offset-2 dark:ring-offset-addis-dark bg-white hover:ring-addis-green transition-all shadow-md">
+                       <img src={getAssetUrl(collab.profileImageUrl) ?? "/images/default_user.jpg"} className="h-full w-full object-cover" alt="" />
+                    </div>
+                  </Link>
+                ))}
+                {!collaborating && !isOwner && (
+                  <button onClick={handleCollaborate} className="h-12 w-12 rounded-full border-2 border-dashed border-gray-300 dark:border-white/10 flex items-center justify-center text-gray-400 hover:text-addis-green hover:border-addis-green transition-all group">
+                    <span className="text-xl font-bold group-hover:scale-125 transition-transform">+</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </section>
+
+          {/* Strategic Partners (Sponsors) */}
+          <section className="bg-white dark:bg-addis-dark p-10 shadow-xl border-t-4 border-addis-blue transition-colors">
+             <h2 className="mb-6 text-[11px] font-black text-addis-dark dark:text-white uppercase tracking-[0.4em]">Strategic Partners</h2>
+             <div className="flex flex-col items-center justify-center py-10 opacity-20 border-2 border-dashed border-gray-100 dark:border-white/5">
+                <img src="/images/sponsor_badge.png" className="h-12 grayscale mb-4" alt="" />
+                <p className="text-[10px] font-black uppercase tracking-widest text-center">Awaiting Capital Alignment</p>
+             </div>
+          </section>
+        </div>
+      </div>
+
+      {/* Delete confirmation Modal */}
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-addis-dark/90 backdrop-blur-md">
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="bg-white dark:bg-addis-dark max-w-sm w-full p-10 shadow-2xl border-t-8 border-addis-red text-center">
+              <h2 className="text-xl font-black text-addis-dark dark:text-white uppercase tracking-tighter mb-4">Confirm Removal</h2>
+              <p className="text-sm font-medium text-gray-500 mb-10 leading-relaxed uppercase tracking-tight">Are you certain you wish to remove this proposal? This action is permanent and cannot be undone.</p>
+              <div className="flex flex-col gap-3">
+                <button onClick={handleDelete} disabled={deleting} className="bg-addis-red py-4 text-[11px] font-black text-white uppercase tracking-widest shadow-xl active:scale-95 disabled:opacity-50">
+                  {deleting ? "REMOVING..." : "CONFIRM REMOVAL"}
+                </button>
+                <button onClick={() => setShowDeleteConfirm(false)} className="py-4 text-[11px] font-black text-gray-400 uppercase tracking-widest hover:text-gray-600 transition-colors">
+                  CANCEL
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

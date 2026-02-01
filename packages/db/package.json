@@ -9,7 +9,8 @@
     "build": "tsc",
     "db:generate": "tsx node_modules/drizzle-kit/bin.cjs generate",
     "db:migrate": "tsx node_modules/drizzle-kit/bin.cjs migrate",
-    "db:studio": "tsx node_modules/drizzle-kit/bin.cjs studio"
+    "db:studio": "tsx node_modules/drizzle-kit/bin.cjs studio",
+    "db:seed": "tsx src/seed.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.39.0",
