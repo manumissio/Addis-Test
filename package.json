@@ -13,7 +13,7 @@
     "db:seed": "turbo db:seed"
   },
   "devDependencies": {
-    "turbo": "^2.4.0",
+    "turbo": "^2.9.14",
     "typescript": "^5.7.0"
   },
   "packageManager": "pnpm@10.6.0"
